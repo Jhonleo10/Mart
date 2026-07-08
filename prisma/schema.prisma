@@ -1,0 +1,758 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  COMPANY
+  USER
+}
+
+enum CompanyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+enum ProductStatus {
+  DRAFT
+  PENDING_REVIEW
+  PUBLISHED
+  REJECTED
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum BookingStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  CONVERTED
+  CLOSED
+}
+
+enum BookingType {
+  DEMO
+  CONTACT
+}
+
+enum MeetingStatus {
+  PENDING_SCHEDULE
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+  RESCHEDULED
+  NO_SHOW
+}
+
+enum MeetingProvider {
+  GOOGLE
+  TEAMS
+  ZOOM
+  CUSTOM
+}
+
+enum MeetingReminderType {
+  REMINDER_24H
+  REMINDER_30M
+  REMINDER_5M
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentType {
+  REGISTRATION
+  SUBSCRIPTION
+}
+
+enum PricingModel {
+  FREE
+  FREEMIUM
+  SUBSCRIPTION
+  ONE_TIME
+  CUSTOM
+}
+
+enum SubscriptionPlan {
+  BASIC
+  GROWTH
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model User {
+  id                  String           @id @default(cuid())
+  name                String?
+  email               String           @unique
+  phone               String?
+  emailVerified       DateTime?
+  password            String?
+  image               String?
+  role                Role             @default(USER)
+  status              UserStatus       @default(INACTIVE)
+  failedLoginAttempts Int              @default(0)
+  lockedUntil         DateTime?
+  sessionVersion      Int              @default(0)
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  accounts            Account[]
+  sessions            Session[]
+  company             Company?
+  bookings            Booking[]
+  reviews             Review[]
+  wishlist            Wishlist[]
+  notifications       Notification[]
+  auditLogs           AuditLog[]
+  passwordResets      PasswordReset[]
+  otpVerification     OtpVerification?
+  requirementProfile  UserRequirementProfile?
+  recentlyViewed      ProductRecentlyViewed[]
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Company {
+  id                      String                @id @default(cuid())
+  userId                  String                @unique
+  name                    String
+  ownerName               String?
+  slug                    String                @unique
+  website                 String?
+  description             String?               @db.Text
+  industry                String?
+  contactEmail            String
+  contactPhone            String?
+  logo                    String?
+  status                  CompanyStatus         @default(PENDING)
+  paymentVerified         Boolean               @default(false)
+  adminApproved           Boolean               @default(false)
+  verificationToken       String?               @unique
+  verificationTokenExpiry DateTime?
+  selectedPlan            SubscriptionPlan?
+  metaTitle               String?
+  metaDescription         String?               @db.Text
+  seoTagline              String?
+  landingEnabled          Boolean               @default(false)
+  vendorLandingTheme      Json?
+  rejectionNote           String?               @db.Text
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  user                    User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products                Product[]
+  bookings                Booking[]
+  payments                Payment[]
+  subscriptions           Subscription[]
+  bookingSlots            CompanyBookingSlot[]
+  availability            CompanyAvailability[]
+  googleCalendar          CompanyGoogleCalendar?
+  demoMeetings            DemoMeeting[]
+
+  @@index([status])
+  @@index([slug])
+  @@index([name])
+}
+
+model BookingTimeSlot {
+  id           String                @id @default(cuid())
+  label        String                @unique
+  value        String                @unique
+  sortOrder    Int                   @default(0)
+  createdAt    DateTime              @default(now())
+  companies    CompanyBookingSlot[]
+  availability CompanyAvailability[]
+
+  @@index([sortOrder])
+}
+
+model CompanyAvailability {
+  id                String          @id @default(cuid())
+  companyId         String
+  date              DateTime        @db.Date
+  bookingTimeSlotId String
+  company           Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bookingTimeSlot   BookingTimeSlot @relation(fields: [bookingTimeSlotId], references: [id], onDelete: Cascade)
+  booking           Booking?
+  createdAt         DateTime        @default(now())
+
+  @@unique([companyId, date, bookingTimeSlotId])
+  @@index([companyId, date])
+}
+
+model CompanyBookingSlot {
+  companyId         String
+  bookingTimeSlotId String
+  company           Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bookingTimeSlot   BookingTimeSlot @relation(fields: [bookingTimeSlotId], references: [id], onDelete: Cascade)
+
+  @@id([companyId, bookingTimeSlotId])
+  @@index([companyId])
+  @@index([bookingTimeSlotId])
+}
+
+model Category {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  slug            String    @unique
+  description     String?
+  metaTitle       String?
+  metaDescription String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  products        Product[]
+
+  @@index([slug])
+}
+
+model Industry {
+  id              String            @id @default(cuid())
+  name            String            @unique
+  slug            String            @unique
+  description     String?           @db.Text
+  metaTitle       String?
+  metaDescription String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  products        ProductIndustry[]
+
+  @@index([slug])
+}
+
+model ProductIndustry {
+  productId  String
+  industryId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  industry   Industry @relation(fields: [industryId], references: [id], onDelete: Cascade)
+
+  @@id([productId, industryId])
+  @@index([industryId])
+}
+
+model Tag {
+  id        String       @id @default(cuid())
+  name      String       @unique
+  slug      String       @unique
+  createdAt DateTime     @default(now())
+  products  ProductTag[]
+
+  @@index([slug])
+}
+
+enum LandingPageStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model ProductLandingPage {
+  id              String            @id @default(cuid())
+  productId       String            @unique
+  status          LandingPageStatus @default(PUBLISHED)
+  publishedAt     DateTime?
+  sectionOrder    Json
+  sections        Json
+  theme           Json
+  draftSections   Json?
+  draftSectionOrder Json?
+  draftTheme      Json?
+  seoTitle        String?
+  seoDescription  String?           @db.Text
+  focusKeywords   String?
+  canonicalUrl    String?
+  ogTitle         String?
+  ogDescription   String?           @db.Text
+  ogImage         String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  product         Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  versions        ProductLandingVersion[]
+
+  @@index([status])
+}
+
+model ProductLandingVersion {
+  id            String             @id @default(cuid())
+  landingPageId String
+  label         String?
+  snapshot      Json
+  createdAt     DateTime           @default(now())
+  landingPage   ProductLandingPage @relation(fields: [landingPageId], references: [id], onDelete: Cascade)
+
+  @@index([landingPageId])
+}
+
+model Product {
+  id               String            @id @default(cuid())
+  companyId        String
+  categoryId       String
+  name             String
+  slug             String            @unique
+  shortDescription String
+  fullDescription  String            @db.Text
+  pricingModel     PricingModel
+  price            Float?
+  features         String[]
+  integrations     String[]          @default([])
+  deploymentTypes  String[]          @default([])
+  hasMobileApp     Boolean           @default(false)
+  hasApiAccess     Boolean           @default(false)
+  securityFeatures String[]          @default([])
+  suitableFor      String[]          @default([])
+  businessSizes    String[]          @default([])
+  websiteUrl       String?
+  demoUrl          String?
+  supportEmail     String?
+  status           ProductStatus     @default(DRAFT)
+  rejectionNote    String?           @db.Text
+  featured         Boolean           @default(false)
+  adminVerified    Boolean           @default(false)
+  metaTitle        String?
+  metaDescription  String?
+  viewCount        Int               @default(0)
+  clickCount       Int               @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  company          Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  category         Category          @relation(fields: [categoryId], references: [id])
+  images           ProductImage[]
+  tags             ProductTag[]
+  industries       ProductIndustry[]
+  bookings         Booking[]
+  reviews          Review[]
+  wishlist         Wishlist[]
+  views            ProductView[]
+  clicks           ProductClick[]
+  comparisonsA     Comparison[]      @relation("ComparisonProductA")
+  comparisonsB     Comparison[]      @relation("ComparisonProductB")
+  landingPage      ProductLandingPage?
+  recentlyViewed   ProductRecentlyViewed[]
+
+  @@index([companyId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([adminVerified])
+  @@index([slug])
+  @@index([name])
+  @@index([createdAt])
+  @@index([viewCount])
+  @@index([featured])
+}
+
+model ProductView {
+  id        String   @id @default(cuid())
+  productId String
+  ipHash    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([createdAt])
+}
+
+model ProductClick {
+  id        String   @id @default(cuid())
+  productId String
+  clickType String
+  ipHash    String?
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([clickType])
+  @@index([createdAt])
+}
+
+model Comparison {
+  id         String   @id @default(cuid())
+  productAId String
+  productBId String
+  slug       String   @unique
+  viewCount  Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  productA   Product  @relation("ComparisonProductA", fields: [productAId], references: [id], onDelete: Cascade)
+  productB   Product  @relation("ComparisonProductB", fields: [productBId], references: [id], onDelete: Cascade)
+
+  @@unique([productAId, productBId])
+  @@index([slug])
+}
+
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String
+  url       String
+  alt       String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model ProductTag {
+  productId String
+  tagId     String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([productId, tagId])
+}
+
+model Booking {
+  id             String        @id @default(cuid())
+  productId      String?
+  companyId      String
+  userId         String?
+  availabilityId String?       @unique
+  type           BookingType   @default(DEMO)
+  name           String
+  email          String
+  phone          String
+  companyName    String?
+  preferredDate  DateTime?
+  preferredTime  String?
+  message        String?       @db.Text
+  meetingLink    String?
+  status         BookingStatus @default(NEW)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  product        Product?      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  company        Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  availability   CompanyAvailability? @relation(fields: [availabilityId], references: [id], onDelete: SetNull)
+  demoMeeting    DemoMeeting?
+
+  @@index([productId])
+  @@index([companyId])
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@index([companyId, preferredDate, preferredTime])
+}
+
+model CompanyGoogleCalendar {
+  id            String   @id @default(cuid())
+  companyId     String   @unique
+  googleEmail   String
+  accessToken   String   @db.Text
+  refreshToken  String   @db.Text
+  tokenExpiry   DateTime?
+  scope         String?
+  calendarId    String   @default("primary")
+  connectedAt   DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+}
+
+model DemoMeeting {
+  id                String            @id @default(cuid())
+  bookingId         String            @unique
+  companyId         String
+  meetingProvider   MeetingProvider?
+  meetingLink       String?
+  googleEventId     String?
+  googleMeetLink    String?
+  googleCalendarId  String            @default("primary")
+  scheduledAt       DateTime
+  durationMinutes   Int            @default(30)
+  timezone          String         @default("Asia/Kolkata")
+  status            MeetingStatus  @default(PENDING_SCHEDULE)
+  notes             String?        @db.Text
+  feedback          String?        @db.Text
+  feedbackRating    Int?
+  cancelledReason   String?        @db.Text
+  rescheduledFromId String?
+  icsUid            String?
+  createdById       String?
+  updatedById       String?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  booking           Booking        @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  company           Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  history           MeetingHistory[]
+  reminders         MeetingReminder[]
+
+  @@index([companyId])
+  @@index([scheduledAt])
+  @@index([status])
+  @@index([companyId, scheduledAt])
+  @@index([companyId, status])
+}
+
+model MeetingHistory {
+  id        String      @id @default(cuid())
+  meetingId String
+  action    String
+  actorId   String?
+  actorRole String?
+  metadata  Json?
+  createdAt DateTime    @default(now())
+  meeting   DemoMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@index([meetingId])
+  @@index([createdAt])
+}
+
+model MeetingReminder {
+  id        String              @id @default(cuid())
+  meetingId String
+  type      MeetingReminderType
+  sentAt    DateTime            @default(now())
+  meeting   DemoMeeting         @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+
+  @@unique([meetingId, type])
+  @@index([meetingId])
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  companyId         String
+  type              PaymentType
+  razorpayOrderId   String        @unique
+  razorpayPaymentId String?
+  razorpaySignature String?
+  amount            Float
+  currency          String        @default("INR")
+  status            PaymentStatus @default(PENDING)
+  metadata          Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  company           Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([status])
+  @@index([razorpayOrderId])
+}
+
+model Subscription {
+  id        String             @id @default(cuid())
+  companyId String
+  plan      SubscriptionPlan
+  status    SubscriptionStatus @default(ACTIVE)
+  startDate DateTime           @default(now())
+  endDate   DateTime
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  company   Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([status])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  productId String
+  userId    String
+  rating    Int
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@index([productId])
+  @@index([rating])
+}
+
+model Wishlist {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
+}
+
+model SiteSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expires   DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([expires])
+}
+
+model OtpVerification {
+  id          String    @id @default(cuid())
+  userId      String    @unique
+  otp         String
+  expires     DateTime
+  attempts    Int       @default(0)
+  lockedUntil DateTime?
+  createdAt   DateTime  @default(now())
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expires])
+  @@index([lockedUntil])
+}
+
+model PendingCompanyRegistration {
+  id              String   @id @default(cuid())
+  razorpayOrderId String   @unique
+  planId          String
+  email           String
+  hashedPassword  String
+  companyName     String
+  ownerName       String
+  phone           String
+  website         String?
+  industry        String
+  slug            String
+  expiresAt       DateTime
+  createdAt       DateTime @default(now())
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  template  String
+  status    String
+  error     String?  @db.Text
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([to])
+  @@index([template])
+  @@index([createdAt])
+}
+
+model UserRequirementProfile {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  industry              String?
+  businessSize          String?
+  budgetMax             Float?
+  requiredFeatures      String[] @default([])
+  preferredIntegrations String[] @default([])
+  companyType           String?
+  deploymentPreference  String?
+  country               String?  @default("IN")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ProductRecentlyViewed {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  viewedAt  DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId, viewedAt(sort: Desc)])
+}
