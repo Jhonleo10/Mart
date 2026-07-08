@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Session } from "next-auth";
 import { auth, signOut } from "@/lib/auth";
 import { ROLE_ROUTES } from "@/lib/rbac";
 import { AUTH_PATHS } from "@/lib/auth-paths";
@@ -11,7 +12,7 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { LandingNav } from "@/components/layout/landing-nav";
 
 export async function Header() {
-  let session: Awaited<ReturnType<typeof auth>> = null;
+  let session: Session | null = null;
   try {
     session = await auth();
   } catch (error) {
