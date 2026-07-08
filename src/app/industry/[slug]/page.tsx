@@ -10,6 +10,8 @@ import { resolveAppBaseUrl } from "@/lib/app-url";
 import { PageHeader, PageSection } from "@/components/layout/page-shell";
 import { Button } from "@/components/ui/button";
 
+export const revalidate = 300;
+
 interface PageProps {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ page?: string }>;

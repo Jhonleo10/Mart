@@ -5,7 +5,7 @@ import { ProductsCatalogHero } from "@/components/products/products-catalog-hero
 import { ModernProductCard } from "@/components/products/modern-product-card";
 import { ProductsExploreFilters } from "@/components/products/products-explore-filters";
 import { productRepository } from "@/repositories/product.repository";
-import { categoryRepository } from "@/repositories/notification.repository";
+import { categoryRepository } from "@/repositories/category.repository";
 import { industryRepository } from "@/repositories/industry.repository";
 import { buildPageMetadata } from "@/lib/seo";
 import { getPaginationRange } from "@/lib/pagination";

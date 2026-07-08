@@ -3,11 +3,14 @@ import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { productRepository } from "@/repositories/product.repository";
-import { recentlyViewedRepository } from "@/repositories/intelligence.repository";
 import { ProductBookDemoView } from "@/components/products/product-book-demo-view";
+import { ProductViewBeacon } from "@/components/analytics/product-view-beacon";
 import { buildPageMetadata, breadcrumbJsonLd, productJsonLd } from "@/lib/seo";
 import { resolveAppBaseUrl } from "@/lib/app-url";
 import { JsonLdScript } from "@/components/seo/json-ld-script";
+import { safeDbQuery } from "@/lib/db/safe-query";
+
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -15,7 +18,11 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = await productRepository.findBySlug(slug);
+  const product = await safeDbQuery(
+    "bookMetadata",
+    () => productRepository.findBySlug(slug),
+    null,
+  );
   if (!product || product.status !== "PUBLISHED" || product.company.status !== "APPROVED") {
     return { title: "Product Not Found" };
   }
@@ -39,17 +46,16 @@ export default async function BookDemoPage({ params }: PageProps) {
   const session = await auth();
   const buyerUserId = session?.user?.role === "USER" ? session.user.id : null;
   const buyerUser = buyerUserId
-    ? await prisma.user.findUnique({
-        where: { id: buyerUserId },
-        select: { name: true, email: true, phone: true },
-      })
+    ? await safeDbQuery(
+        "bookBuyerUser",
+        () =>
+          prisma.user.findUnique({
+            where: { id: buyerUserId },
+            select: { name: true, email: true, phone: true },
+          }),
+        null,
+      )
     : null;
-
-  if (buyerUserId) {
-    await recentlyViewedRepository.record(buyerUserId, product.id);
-  }
-
-  void productRepository.incrementViews(product.id);
 
   const baseUrl = await resolveAppBaseUrl();
   const productSchema = productJsonLd({
@@ -73,6 +79,7 @@ export default async function BookDemoPage({ params }: PageProps) {
 
   return (
     <>
+      <ProductViewBeacon productId={product.id} />
       <JsonLdScript data={[productSchema, breadcrumbSchema]} />
       <ProductBookDemoView
         product={{

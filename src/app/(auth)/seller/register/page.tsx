@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { settingsRepository } from "@/repositories/settings.repository";
+import { getPricingPlansForDisplay } from "@/services/site-settings.service";
 import { getVendorDisplayPlans } from "@/lib/settings/pricing";
-import { getRazorpayCredentials } from "@/lib/razorpay";
+import { getRazorpayCredentialsFromEnv } from "@/lib/razorpay";
 import SellerRegisterForm from "./seller-register-form";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Register as a Seller | Genius Mart",
@@ -10,11 +12,9 @@ export const metadata: Metadata = {
 };
 
 export default async function SellerRegisterPage() {
-  await settingsRepository.seedDefaults();
-  await settingsRepository.syncRazorpayFromEnv();
   const [plans, creds] = await Promise.all([
-    settingsRepository.getPricingPlans(),
-    getRazorpayCredentials(),
+    getPricingPlansForDisplay(),
+    Promise.resolve(getRazorpayCredentialsFromEnv()),
   ]);
   const pricingPlans = getVendorDisplayPlans(plans);
   const paymentConfigured = Boolean(creds.keyId && creds.keySecret);

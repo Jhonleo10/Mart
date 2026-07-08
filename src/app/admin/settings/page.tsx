@@ -5,14 +5,18 @@ import {
   toRazorpaySettingsPublic,
   toSmtpSettingsPublic,
 } from "@/lib/settings/mask-secrets";
+import { requireDbQuery } from "@/lib/db/safe-query";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminSettingsPage() {
-  await settingsRepository.seedDefaults();
-  const [smtp, razorpay, general] = await Promise.all([
-    settingsRepository.getSmtp(),
-    settingsRepository.getRazorpay(),
-    settingsRepository.getGeneral(),
-  ]);
+  const [smtp, razorpay, general] = await requireDbQuery("adminSettings", () =>
+    Promise.all([
+      settingsRepository.getSmtp(),
+      settingsRepository.getRazorpay(),
+      settingsRepository.getGeneral(),
+    ]),
+  );
 
   return (
     <div className="admin-page dash-page-enter space-y-5">

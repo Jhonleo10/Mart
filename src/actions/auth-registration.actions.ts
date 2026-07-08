@@ -201,7 +201,7 @@ export async function completeCompanyRegistration(data: {
           razorpayPaymentId: data.razorpayPaymentId,
           razorpaySignature: data.razorpaySignature,
           amount:
-            (await settingsRepository.getPricingPlans()).find((p) => p.id === data.planId)
+            (await settingsRepository.getPricingPlansReadOnly()).find((p) => p.id === data.planId)
               ?.priceAmount ?? 0,
           status: "COMPLETED",
           companyId: company.id,

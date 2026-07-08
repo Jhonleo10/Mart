@@ -11,6 +11,8 @@ import { JsonLdScript } from "@/components/seo/json-ld-script";
 import { ExternalLink } from "lucide-react";
 import { PageSection, EmptyState } from "@/components/layout/page-shell";
 
+export const revalidate = 300;
+
 interface CompanyPageProps {
   params: Promise<{ slug: string }>;
 }

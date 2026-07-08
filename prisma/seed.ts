@@ -1,6 +1,7 @@
 import { PrismaClient, type SubscriptionPlan } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { DEFAULT_BOOKING_TIME_SLOTS } from "../src/lib/booking-time-slots";
+import { settingsRepository } from "../src/repositories/settings.repository";
 
 const prisma = new PrismaClient();
 
@@ -344,9 +345,15 @@ async function seedProductsAndAvailability() {
   console.log("Seeded demo products, industries, and growth vendor availability");
 }
 
+async function seedSiteSettings() {
+  await settingsRepository.seedDefaults();
+  console.log("Seeded site settings (pricing, SMTP, Razorpay, general)");
+}
+
 async function main() {
   await seedUsers();
   await seedBookingTimeSlots();
+  await seedSiteSettings();
   await seedCategoriesAndIndustries();
   await seedProductsAndAvailability();
 }

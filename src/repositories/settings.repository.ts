@@ -16,11 +16,27 @@ async function setSetting<T>(key: string, value: T) {
   });
 }
 
+function normalizePricingPlans(stored: PricingPlan[] | null): PricingPlan[] {
+  const merged = mergePricingPlans(stored ?? [], ALL_DEFAULT_PRICING_PLANS);
+  return merged.map((plan) => ({ ...plan, active: plan.active ?? true }));
+}
+
 export const settingsRepository = {
+  /** Raw DB read — no merge, no writes. */
+  async getPricingPlansRaw(): Promise<PricingPlan[] | null> {
+    return getSetting<PricingPlan[] | null>("pricing_plans", null);
+  },
+
+  /** Read-only: merge defaults in memory. Never persists. */
+  async getPricingPlansReadOnly(): Promise<PricingPlan[]> {
+    const stored = await this.getPricingPlansRaw();
+    return normalizePricingPlans(stored);
+  },
+
+  /** @deprecated Use getPricingPlansReadOnly() for reads. Persists merged defaults — admin/sync only. */
   async getPricingPlans(): Promise<PricingPlan[]> {
-    const stored = await getSetting<PricingPlan[] | null>("pricing_plans", null);
-    const merged = mergePricingPlans(stored ?? [], ALL_DEFAULT_PRICING_PLANS);
-    const normalized = merged.map((plan) => ({ ...plan, active: plan.active ?? true }));
+    const normalized = await this.getPricingPlansReadOnly();
+    const stored = await this.getPricingPlansRaw();
 
     const needsPersist =
       !stored ||
@@ -32,6 +48,13 @@ export const settingsRepository = {
       await setSetting("pricing_plans", normalized);
     }
 
+    return normalized;
+  },
+
+  /** Admin action: persist merged pricing plans from defaults. */
+  async syncPricingPlansFromDefaults(): Promise<PricingPlan[]> {
+    const normalized = await this.getPricingPlansReadOnly();
+    await setSetting("pricing_plans", normalized);
     return normalized;
   },
 
@@ -78,6 +101,10 @@ export const settingsRepository = {
     return setSetting("general", general);
   },
 
+  /**
+   * Initialize site settings — call only from prisma/seed.ts or admin maintenance actions.
+   * Never call from pages, layouts, or metadata.
+   */
   async seedDefaults() {
     const keys = ["pricing_plans", "smtp", "razorpay", "general"] as const;
     const existing = await prisma.siteSetting.count({

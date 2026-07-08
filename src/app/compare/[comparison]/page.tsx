@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { productRepository } from "@/repositories/product.repository";
-import { analyticsRepository } from "@/repositories/analytics.repository";
 import { buildIntelligentComparison } from "@/lib/intelligence/comparison-engine";
 import type { IntelligenceProduct } from "@/lib/intelligence/types";
 import { buildPageMetadata } from "@/lib/seo";
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-stat-card";
 import { IntelligentComparisonView } from "@/components/intelligence/intelligent-comparison-view";
+import { ComparisonViewBeacon } from "@/components/analytics/comparison-view-beacon";
+
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ comparison: string }>;
@@ -59,8 +61,6 @@ export default async function ComparePage({ params }: PageProps) {
     notFound();
   }
 
-  await analyticsRepository.getOrCreateComparison(productA.id, productB.id, comparison);
-
   const intelligent = buildIntelligentComparison(
     productA as IntelligenceProduct,
     productB as IntelligenceProduct,
@@ -74,6 +74,11 @@ export default async function ComparePage({ params }: PageProps) {
 
   return (
     <div className="dash-page-enter mx-auto max-w-5xl px-4 py-8 sm:px-6">
+      <ComparisonViewBeacon
+        productAId={productA.id}
+        productBId={productB.id}
+        slug={comparison}
+      />
       <Link
         href={backHref}
         className="mb-4 inline-flex text-sm font-medium text-brand-blue hover:underline"

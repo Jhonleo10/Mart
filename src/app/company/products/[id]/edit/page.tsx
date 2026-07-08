@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { companyRepository } from "@/repositories/company.repository";
 import { productRepository } from "@/repositories/product.repository";
-import { categoryRepository } from "@/repositories/notification.repository";
+import { categoryRepository } from "@/repositories/category.repository";
 import { ProductEditForm } from "@/components/forms/product-edit-form";
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-stat-card";
 

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { splitSiteName } from "@/lib/site-config";
+import { splitSiteName } from "@/lib/site-config.shared";
 
 export function SiteBrandName({
   name,

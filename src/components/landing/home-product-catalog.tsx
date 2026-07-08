@@ -5,7 +5,7 @@ import { SpotlightCarousel } from "@/components/landing/spotlight-carousel";
 import { HomeMarketplaceGrid } from "@/components/landing/home-marketplace-grid";
 import { type ShopProductCardData } from "@/components/landing/shop-product-card";
 import { productRepository } from "@/repositories/product.repository";
-import { categoryRepository } from "@/repositories/notification.repository";
+import { categoryRepository } from "@/repositories/category.repository";
 
 function mapProduct(
   p: Awaited<ReturnType<typeof productRepository.search>>[0][number],

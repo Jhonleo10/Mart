@@ -64,7 +64,7 @@ export async function prepareCompanyRegistrationOrder(
     });
     if (existingCompany) throw new AppError("Company name already registered");
 
-    const plans = await settingsRepository.getPricingPlans();
+    const plans = await settingsRepository.getPricingPlansReadOnly();
     const plan = plans.find((p) => p.id === planId);
     if (!plan || plan.active === false || !plan.razorpayEnabled || !plan.priceAmount) {
       throw new AppError("Please select a valid seller plan", 400);
@@ -178,7 +178,7 @@ export async function createPlanOrder(
       throw new AppError("Complete your company profile before payment", 400);
     }
 
-    const plans = await settingsRepository.getPricingPlans();
+    const plans = await settingsRepository.getPricingPlansReadOnly();
     const plan = plans.find((p) => p.id === planId);
     if (!plan || !plan.razorpayEnabled || !plan.priceAmount) {
       throw new AppError("This plan does not require payment", 400);

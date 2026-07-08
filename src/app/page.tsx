@@ -8,16 +8,15 @@ import { HowItWorksSection } from "@/components/landing/how-it-works-section";
 import { HomeContactSection } from "@/components/landing/home-contact-section";
 import { TestimonialsSection } from "@/components/landing/testimonials-section";
 import { TrustedCompaniesSection } from "@/components/landing/trusted-companies-section";
-import { settingsRepository } from "@/repositories/settings.repository";
-import { productRepository } from "@/repositories/product.repository";
-import { prisma } from "@/lib/prisma";
+import { getHomePageData } from "@/services/home-page.service";
 import { ABOUT_FEATURES } from "@/lib/landing";
-import { getVendorDisplayPlans } from "@/lib/settings/pricing";
 import { AUTH_PATHS } from "@/lib/auth-paths";
 import { buildPageMetadata, webSiteJsonLd } from "@/lib/seo";
 import { JsonLdScript } from "@/components/seo/json-ld-script";
 import { ScrollReveal } from "@/components/landing/landing-effects";
 import { Shield, Calendar, Users, Search, Sparkles } from "lucide-react";
+
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata({
@@ -60,24 +59,8 @@ const BENEFITS = [
 ] as const;
 
 export default async function HomePage() {
-  const [stats, pricingPlans, companies, bubbleProducts] = await Promise.all([
-    Promise.all([
-      prisma.company.count({ where: { status: "APPROVED" } }),
-      prisma.user.count({ where: { role: "USER" } }),
-      prisma.product.count({ where: { status: "PUBLISHED" } }),
-      prisma.category.count(),
-    ]),
-    settingsRepository.getPricingPlans(),
-    prisma.company.findMany({
-      where: { status: "APPROVED" },
-      take: 12,
-      orderBy: { createdAt: "desc" },
-      select: { name: true, logo: true, industry: true },
-    }),
-    productRepository.findHeroBubbleProducts(10),
-  ]);
-
-  const [companyCount, userCount, productCount, categoryCount] = stats;
+  const { companyCount, userCount, productCount, categoryCount, pricingPlans, companies, bubbleProducts } =
+    await getHomePageData();
   const webSiteSchema = await webSiteJsonLd();
 
   return (
@@ -239,7 +222,7 @@ export default async function HomePage() {
       </section>
 
       <ScrollReveal>
-        <PricingSection plans={getVendorDisplayPlans(pricingPlans)} />
+        <PricingSection plans={pricingPlans} />
       </ScrollReveal>
 
       <section className="safe-container pb-16 pt-4">

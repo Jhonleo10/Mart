@@ -4,12 +4,14 @@ import type { Metadata } from "next";
 import { ProductCard } from "@/components/products/product-card";
 import { Button } from "@/components/ui/button";
 import { productRepository } from "@/repositories/product.repository";
-import { categoryRepository } from "@/repositories/notification.repository";
+import { categoryRepository } from "@/repositories/category.repository";
 import { analyticsRepository } from "@/repositories/analytics.repository";
 import { buildPageMetadata, breadcrumbJsonLd } from "@/lib/seo";
 import { resolveAppBaseUrl } from "@/lib/app-url";
 import { PageHeader, PageSection } from "@/components/layout/page-shell";
 import { getProductBookDemoPath } from "@/lib/product-public-url";
+
+export const revalidate = 300;
 
 interface PageProps {
   params: Promise<{ category: string }>;

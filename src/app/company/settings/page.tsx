@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { companyRepository } from "@/repositories/company.repository";
 import { AUTH_PATHS } from "@/lib/auth-paths";
-import { settingsRepository } from "@/repositories/settings.repository";
+import { getPricingPlansForDisplay } from "@/services/site-settings.service";
 import { getRazorpayCredentials } from "@/lib/razorpay";
 import { getCompanyEffectivePlan } from "@/lib/plans/company-plan";
 import { getVendorUpgradePlans } from "@/lib/plans/plan-catalog";
@@ -30,7 +30,7 @@ export default async function CompanySettingsPage() {
   if (!company) redirect(AUTH_PATHS.companyRegister);
 
   const [pricingPlans, creds, googleConnection, allProducts] = await Promise.all([
-    settingsRepository.getPricingPlans(),
+    getPricingPlansForDisplay(),
     getRazorpayCredentials(),
     companyGoogleRepository.findByCompanyId(company.id),
     productRepository.listByCompany(company.id),

@@ -4,7 +4,7 @@ import { AppToaster } from "@/components/layout/app-toaster";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { ConditionalFooter, ConditionalHeader } from "@/components/layout/conditional-chrome";
-import { getSiteConfig } from "@/lib/site-config";
+import { getStaticSiteConfig } from "@/lib/site-config.shared";
 import "./globals.css";
 
 const heading = Plus_Jakarta_Sans({
@@ -18,8 +18,8 @@ const body = DM_Sans({
   subsets: ["latin"],
 });
 
-export async function generateMetadata(): Promise<Metadata> {
-  const site = await getSiteConfig();
+export function generateMetadata(): Metadata {
+  const site = getStaticSiteConfig();
 
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),

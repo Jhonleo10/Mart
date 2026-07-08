@@ -11,8 +11,15 @@ export async function register() {
   }
 
   if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-    const { settingsRepository } = await import("@/repositories/settings.repository");
-    await settingsRepository.syncRazorpayFromEnv();
+    const { isDatabaseConfigured } = await import("@/lib/db/is-database-configured");
+    if (isDatabaseConfigured()) {
+      const { settingsRepository } = await import("@/repositories/settings.repository");
+      try {
+        await settingsRepository.syncRazorpayFromEnv();
+      } catch (error) {
+        console.warn("[instrumentation] Razorpay settings sync skipped:", error);
+      }
+    }
   }
 
   if (process.env.NODE_ENV === "development") {

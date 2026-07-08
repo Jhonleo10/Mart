@@ -5,7 +5,7 @@ import { DiscoveryHub } from "@/components/user/discovery-hub";
 import { getRecommendationsForUser } from "@/lib/intelligence/recommendation-engine";
 import { requirementRepository, recentlyViewedRepository } from "@/repositories/intelligence.repository";
 import { productRepository } from "@/repositories/product.repository";
-import { categoryRepository } from "@/repositories/notification.repository";
+import { categoryRepository } from "@/repositories/category.repository";
 
 export default async function UserDashboardPage() {
   const session = await auth();

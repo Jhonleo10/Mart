@@ -1,6 +1,7 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import { settingsRepository } from "@/repositories/settings.repository";
+import { isDatabaseConfigured } from "@/lib/db/is-database-configured";
 
 export type RazorpayCredentials = {
   keyId: string;
@@ -8,12 +9,26 @@ export type RazorpayCredentials = {
   webhookSecret: string;
 };
 
+/** Env-only credentials — safe for public pages and build. */
+export function getRazorpayCredentialsFromEnv(): RazorpayCredentials {
+  return {
+    keyId: process.env.RAZORPAY_KEY_ID || "",
+    keySecret: process.env.RAZORPAY_KEY_SECRET || "",
+    webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || "",
+  };
+}
+
 export async function getRazorpayCredentials(): Promise<RazorpayCredentials> {
+  const fromEnv = getRazorpayCredentialsFromEnv();
+  if (!isDatabaseConfigured()) {
+    return fromEnv;
+  }
+
   const settings = await settingsRepository.getRazorpay();
   return {
-    keyId: settings.keyId || process.env.RAZORPAY_KEY_ID || "",
-    keySecret: settings.keySecret || process.env.RAZORPAY_KEY_SECRET || "",
-    webhookSecret: settings.webhookSecret || process.env.RAZORPAY_WEBHOOK_SECRET || "",
+    keyId: settings.keyId || fromEnv.keyId,
+    keySecret: settings.keySecret || fromEnv.keySecret,
+    webhookSecret: settings.webhookSecret || fromEnv.webhookSecret,
   };
 }
 

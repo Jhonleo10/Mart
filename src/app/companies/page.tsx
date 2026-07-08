@@ -6,6 +6,9 @@ import { getVendorPublicPath } from "@/lib/vendor-public-url";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader, PageSection } from "@/components/layout/page-shell";
 import { buildPageMetadata } from "@/lib/seo";
+import { safeDbQuery } from "@/lib/db/safe-query";
+
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildPageMetadata({
@@ -17,18 +20,23 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function CompaniesPage() {
-  const companies = await prisma.company.findMany({
-    where: { status: "APPROVED" },
-    include: {
-      _count: { select: { products: { where: { status: "PUBLISHED" } } } },
-      subscriptions: {
-        where: { status: "ACTIVE", endDate: { gt: new Date() } },
-        orderBy: { endDate: "desc" },
-        take: 1,
-      },
-    },
-    orderBy: { name: "asc" },
-  });
+  const companies = await safeDbQuery(
+    "companiesList",
+    () =>
+      prisma.company.findMany({
+        where: { status: "APPROVED" },
+        include: {
+          _count: { select: { products: { where: { status: "PUBLISHED" } } } },
+          subscriptions: {
+            where: { status: "ACTIVE", endDate: { gt: new Date() } },
+            orderBy: { endDate: "desc" },
+            take: 1,
+          },
+        },
+        orderBy: { name: "asc" },
+      }),
+    [],
+  );
 
   return (
     <PageSection>

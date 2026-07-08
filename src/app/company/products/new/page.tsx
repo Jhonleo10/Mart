@@ -3,7 +3,7 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { companyRepository } from "@/repositories/company.repository";
 import { productRepository } from "@/repositories/product.repository";
-import { categoryRepository } from "@/repositories/notification.repository";
+import { categoryRepository } from "@/repositories/category.repository";
 import { ProductForm } from "@/components/forms/product-form";
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-stat-card";
 import { Button } from "@/components/ui/button";
