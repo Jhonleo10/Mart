@@ -11,7 +11,12 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { LandingNav } from "@/components/layout/landing-nav";
 
 export async function Header() {
-  const session = await auth();
+  let session: Awaited<ReturnType<typeof auth>> = null;
+  try {
+    session = await auth();
+  } catch (error) {
+    console.warn("[Header] Auth unavailable during render:", error);
+  }
   const site = await getSiteConfig();
   const dashboardHref = session?.user ? ROLE_ROUTES[session.user.role] : undefined;
 

@@ -6,9 +6,10 @@
     "dev": "next dev --turbopack",
     "dev:webpack": "next dev --webpack",
     "dev:turbo": "next dev --turbopack",
-    "build": "next build --webpack",
+    "build": "prisma generate && next build --webpack",
     "start": "next start",
     "lint": "eslint",
+    "postinstall": "prisma generate",
     "test": "npx tsx --test --test-reporter spec --tsconfig tsconfig.json src/lib/**/*.test.ts",
     "db:seed": "prisma db seed"
   },
