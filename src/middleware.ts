@@ -1,33 +1,16 @@
-import NextAuth from "next-auth";
-import { authConfig } from "@/lib/auth.config";
+import { edgeAuthMiddleware } from "@/auth/edge";
 
-/** Compare tray requires a buyer account; product browse & book pages are public. */
-const AUTH_GATED_DISCOVERY = ["/compare/"];
-
-function isAuthGatedDiscoveryPath(pathname: string) {
-  return AUTH_GATED_DISCOVERY.some((p) => pathname === p || pathname.startsWith(p));
-}
-
-export default NextAuth({
-  ...authConfig,
-  callbacks: {
-    ...authConfig.callbacks,
-    authorized({ auth, request }) {
-      const { nextUrl } = request;
-      const isLoggedIn = !!auth?.user;
-      const pathname = nextUrl.pathname;
-
-      if (isAuthGatedDiscoveryPath(pathname)) {
-        if (!isLoggedIn) return false;
-        return true;
-      }
-
-      return authConfig.callbacks.authorized({ auth, request });
-    },
-  },
-}).auth;
+/**
+ * Route protection middleware.
+ *
+ * Uses the Edge-safe Auth.js config (no Prisma/providers) with the stable
+ * Node.js middleware runtime (Next.js 15.5+) to avoid Edge/jose bundling
+ * limitations while keeping auth logic isolated from database code.
+ */
+export default edgeAuthMiddleware;
 
 export const config = {
+  runtime: "nodejs",
   matcher: [
     "/admin/:path*",
     "/company/:path*",

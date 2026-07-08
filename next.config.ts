@@ -70,6 +70,7 @@ const nextConfig: NextConfig = {
     "nodemailer",
     "bcryptjs",
     "exceljs",
+    "@auth/prisma-adapter",
   ],
 
   experimental: {
