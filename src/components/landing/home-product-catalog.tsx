@@ -4,13 +4,11 @@ import { HomeProductCarousel } from "@/components/landing/home-product-carousel"
 import { SpotlightCarousel } from "@/components/landing/spotlight-carousel";
 import { HomeMarketplaceGrid } from "@/components/landing/home-marketplace-grid";
 import { type ShopProductCardData } from "@/components/landing/shop-product-card";
-import { productRepository } from "@/repositories/product.repository";
-import { categoryRepository } from "@/repositories/category.repository";
+import { getHomeCatalogData } from "@/services/home-page.service";
 
-function mapProduct(
-  p: Awaited<ReturnType<typeof productRepository.search>>[0][number],
-  featured = false,
-): ShopProductCardData {
+type CatalogProduct = Awaited<ReturnType<typeof getHomeCatalogData>>["allProducts"][number];
+
+function mapProduct(p: CatalogProduct, featured = false): ShopProductCardData {
   return {
     id: p.id,
     name: p.name,
@@ -27,12 +25,8 @@ function mapProduct(
 }
 
 export async function HomeProductCatalog() {
-  const [categories, spotlightProducts, [allProducts, totalCount], [latest]] = await Promise.all([
-    categoryRepository.list(),
-    productRepository.findProSpotlight(12),
-    productRepository.search({ limit: 100, sort: "popular" }),
-    productRepository.search({ limit: 12, sort: "latest" }),
-  ]);
+  const { categories, spotlightProducts, allProducts, totalCount, latest } =
+    await getHomeCatalogData();
 
   const spotlightIds = new Set(spotlightProducts.map((p) => p.id));
   const carouselProducts = [

@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { productRepository } from "@/repositories/product.repository";
+import { categoryRepository } from "@/repositories/category.repository";
 import { getPricingPlansForDisplay } from "@/services/site-settings.service";
 import { getVendorDisplayPlans } from "@/lib/settings/pricing";
 import { safeDbQuery } from "@/lib/db/safe-query";
@@ -35,6 +36,20 @@ const getHomeBubbleProducts = unstable_cache(
   { revalidate: 300, tags: ["home-page", "products"] },
 );
 
+const getHomeCatalogCached = unstable_cache(
+  async () => {
+    const [categories, spotlightProducts, [allProducts, totalCount], [latest]] = await Promise.all([
+      categoryRepository.list(),
+      productRepository.findProSpotlight(12),
+      productRepository.search({ limit: 100, sort: "popular" }),
+      productRepository.search({ limit: 12, sort: "latest" }),
+    ]);
+    return { categories, spotlightProducts, allProducts, totalCount, latest };
+  },
+  ["home-page-catalog"],
+  { revalidate: 300, tags: ["home-page", "catalog", "products"] },
+);
+
 export async function getHomePageData() {
   const [stats, pricingPlans, companies, bubbleProducts] = await Promise.all([
     safeDbQuery("homeStats", () => getHomeStats(), [0, 0, 0, 0] as const),
@@ -54,4 +69,19 @@ export async function getHomePageData() {
     companies,
     bubbleProducts,
   };
+}
+
+/** Marketplace catalog for the home page — never throws when the DB is unreachable. */
+export async function getHomeCatalogData() {
+  return safeDbQuery(
+    "homeCatalog",
+    () => getHomeCatalogCached(),
+    {
+      categories: [],
+      spotlightProducts: [],
+      allProducts: [],
+      totalCount: 0,
+      latest: [],
+    },
+  );
 }

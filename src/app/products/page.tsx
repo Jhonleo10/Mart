@@ -10,6 +10,7 @@ import { industryRepository } from "@/repositories/industry.repository";
 import { buildPageMetadata } from "@/lib/seo";
 import { getPaginationRange } from "@/lib/pagination";
 import { EmptyState, PaginationLink } from "@/components/layout/page-shell";
+import { safeDbQuery } from "@/lib/db/safe-query";
 
 const PAGE_SIZE = 24;
 
@@ -47,16 +48,21 @@ export default async function ProductsExplorePage({ searchParams }: PageProps) {
   const sort = (query.sort as "popular" | "latest" | "featured") || "popular";
 
   const [categories, industries, productsResult] = await Promise.all([
-    categoryRepository.list(),
-    industryRepository.list(),
-    productRepository.search({
-      page,
-      limit: PAGE_SIZE,
-      q: query.q,
-      category: query.category,
-      industry: query.industry,
-      sort,
-    }),
+    safeDbQuery("productsCategories", () => categoryRepository.list(), []),
+    safeDbQuery("productsIndustries", () => industryRepository.list(), []),
+    safeDbQuery(
+      "productsSearch",
+      () =>
+        productRepository.search({
+          page,
+          limit: PAGE_SIZE,
+          q: query.q,
+          category: query.category,
+          industry: query.industry,
+          sort,
+        }),
+      [[], 0] as const,
+    ),
   ]);
 
   const [products, total] = productsResult;
