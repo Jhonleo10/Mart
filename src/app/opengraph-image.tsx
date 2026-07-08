@@ -1,6 +1,10 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
+/**
+ * Node.js runtime — next/og + Satori WASM exceeds Vercel Hobby
+ * Edge Function size limit (1 MB). Serverless Functions allow larger bundles.
+ */
+export const runtime = "nodejs";
 export const alt = "Digital Genius Mart";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
