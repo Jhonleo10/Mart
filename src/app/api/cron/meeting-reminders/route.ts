@@ -10,8 +10,22 @@ const REMINDER_LABELS: Record<MeetingReminderType, string> = {
   REMINDER_5M: "in 5 minutes",
 };
 
+/**
+ * Windows (minutes of tolerance around the due time):
+ * - 24h: wide enough for Hobby's once-daily Vercel cron
+ * - 30m / 5m: need a frequent external cron (or Vercel Pro) to fire reliably
+ */
+const REMINDER_WINDOWS: Record<MeetingReminderType, number> = {
+  REMINDER_24H: 14 * 60, // ±14h so a daily job still catches next-day demos
+  REMINDER_30M: 3,
+  REMINDER_5M: 3,
+};
+
 async function processReminders(type: MeetingReminderType) {
-  const meetings = await meetingRepository.findDueForReminders(type);
+  const meetings = await meetingRepository.findDueForReminders(
+    type,
+    REMINDER_WINDOWS[type],
+  );
   let sent = 0;
 
   for (const meeting of meetings) {
