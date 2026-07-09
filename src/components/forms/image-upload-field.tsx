@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { UploadFolder } from "@/lib/uploads/local";
+import { preferLocalFileUploads } from "@/lib/uploads/strategy";
 
 type UploadEndpoint = "companyLogo" | "productImages";
 
@@ -93,7 +94,7 @@ export function ImageUploadField({
     reader.onload = (e) => setPreview(e.target?.result as string);
     reader.readAsDataURL(file);
 
-    if (uploadFolder) {
+    if (uploadFolder && preferLocalFileUploads()) {
       await uploadLocally(file);
       return;
     }

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isUploadthingConfigured } from "@/lib/uploadthing-env";
 
 const serverSchema = z.object({
   DATABASE_URL: z.string().min(1),
@@ -73,6 +74,14 @@ export function validateEnv() {
     console.warn(
       "[validateEnv] Upstash Redis not configured — rate limiting will use in-memory fallback.",
     );
+  }
+
+  if (process.env.NODE_ENV === "production" && process.env.VERCEL === "1") {
+    if (!isUploadthingConfigured()) {
+      console.warn(
+        "[validateEnv] UPLOADTHING_TOKEN is not set — product/company image uploads will fail on Vercel.",
+      );
+    }
   }
 
   return server.data;

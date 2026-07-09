@@ -212,105 +212,146 @@ export default function SellerRegisterForm({
 
         <form ref={formRef} onSubmit={handleSubmit} className="auth-form-compact auth-form-tight" noValidate>
           <div className={step === 1 ? "contents" : "hidden"} aria-hidden={step !== 1}>
-            <div className="auth-form-row auth-form-row-seller">
-                <AuthFormField label="Company Name" htmlFor="companyName" error={fieldError("companyName")}>
-                  <div className="auth-input-wrap">
-                    <Building2 className="auth-input-icon" />
-                    <Input
-                      id="companyName"
-                      name="companyName"
-                      required
-                      minLength={FIELD_LIMITS.companyName.min}
-                      maxLength={FIELD_LIMITS.companyName.max}
-                      className={cn("auth-input", fieldError("companyName") && "border-red-500")}
-                      aria-invalid={!!fieldError("companyName")}
-                      onBlur={() => blurField("companyName")}
-                    />
-                  </div>
-                </AuthFormField>
-                <AuthFormField label="Owner Name" htmlFor="ownerName" error={fieldError("ownerName")}>
-                  <div className="auth-input-wrap">
-                    <User className="auth-input-icon" />
-                    <Input
-                      id="ownerName"
-                      name="ownerName"
-                      required
-                      minLength={FIELD_LIMITS.ownerName.min}
-                      maxLength={FIELD_LIMITS.ownerName.max}
-                      className={cn("auth-input", fieldError("ownerName") && "border-red-500")}
-                      aria-invalid={!!fieldError("ownerName")}
-                      onBlur={() => blurField("ownerName")}
-                    />
-                  </div>
-                </AuthFormField>
-                <AuthFormField label="Email" htmlFor="email" error={fieldError("email")}>
-                  <div className="auth-input-wrap">
-                    <Mail className="auth-input-icon" />
-                    <EmailInput
-                      id="email"
-                      name="email"
-                      required
-                      className={cn("auth-input", fieldError("email") && "border-red-500")}
-                      aria-invalid={!!fieldError("email")}
-                      onBlur={() => blurField("email")}
-                    />
-                  </div>
-                </AuthFormField>
-                <p className="text-[10px] leading-snug text-slate-400">{EMAIL_HINT}</p>
-                <AuthFormField label="Phone" htmlFor="phone" error={fieldError("phone")}>
-                  <div className="auth-input-wrap">
-                    <Phone className="auth-input-icon" />
-                    <PhoneInput
-                      id="phone"
-                      name="phone"
-                      required
-                      minDigits={FIELD_LIMITS.phone.exact}
-                      placeholder="9876543210"
-                      className={cn("auth-input", fieldError("phone") && "border-red-500")}
-                      aria-invalid={!!fieldError("phone")}
-                      onBlur={() => blurField("phone")}
-                    />
-                  </div>
-                </AuthFormField>
-                <p className="text-[10px] leading-snug text-slate-400">{PHONE_HINT}</p>
-                <AuthFormField
-                  label="Website (optional)"
-                  htmlFor="website"
-                  error={fieldError("website")}
-                  hint="Must include https://"
-                >
-                  <div className="auth-input-wrap">
-                    <Globe className="auth-input-icon" />
-                    <Input
-                      id="website"
-                      name="website"
-                      type="url"
-                      placeholder="https://example.com"
-                      className={cn("auth-input", fieldError("website") && "border-red-500")}
-                      aria-invalid={!!fieldError("website")}
-                      onBlur={() => blurField("website")}
-                    />
-                  </div>
-                </AuthFormField>
-                <AuthFormField label="Industry" htmlFor="industry" error={fieldError("industry")}>
-                  <div className="auth-input-wrap">
-                    <Building2 className="auth-input-icon" />
-                    <Input
-                      id="industry"
-                      name="industry"
-                      required
-                      minLength={FIELD_LIMITS.industry.min}
-                      maxLength={FIELD_LIMITS.industry.max}
-                      className={cn("auth-input", fieldError("industry") && "border-red-500")}
-                      aria-invalid={!!fieldError("industry")}
-                      onBlur={() => blurField("industry")}
-                    />
-                  </div>
-                </AuthFormField>
-              </div>
+            <div className="auth-form-row auth-form-row-2">
+              <AuthFormField
+                label="Company Name"
+                htmlFor="companyName"
+                error={fieldError("companyName")}
+                reserveHintSpace
+              >
+                <div className="auth-input-wrap">
+                  <Building2 className="auth-input-icon" />
+                  <Input
+                    id="companyName"
+                    name="companyName"
+                    required
+                    minLength={FIELD_LIMITS.companyName.min}
+                    maxLength={FIELD_LIMITS.companyName.max}
+                    placeholder="Acme Software Pvt Ltd"
+                    className={cn("auth-input", fieldError("companyName") && "border-red-500")}
+                    aria-invalid={!!fieldError("companyName")}
+                    onBlur={() => blurField("companyName")}
+                  />
+                </div>
+              </AuthFormField>
 
-              <div className="auth-form-row auth-form-row-password">
-                <AuthFormField label="Password" htmlFor="password" error={fieldError("password")}>
+              <AuthFormField
+                label="Owner Name"
+                htmlFor="ownerName"
+                error={fieldError("ownerName")}
+                reserveHintSpace
+              >
+                <div className="auth-input-wrap">
+                  <User className="auth-input-icon" />
+                  <Input
+                    id="ownerName"
+                    name="ownerName"
+                    required
+                    minLength={FIELD_LIMITS.ownerName.min}
+                    maxLength={FIELD_LIMITS.ownerName.max}
+                    placeholder="Jane Doe"
+                    className={cn("auth-input", fieldError("ownerName") && "border-red-500")}
+                    aria-invalid={!!fieldError("ownerName")}
+                    onBlur={() => blurField("ownerName")}
+                  />
+                </div>
+              </AuthFormField>
+            </div>
+
+            <div className="auth-form-row auth-form-row-2">
+              <AuthFormField
+                label="Email"
+                htmlFor="email"
+                error={fieldError("email")}
+                hint={EMAIL_HINT}
+              >
+                <div className="auth-input-wrap">
+                  <Mail className="auth-input-icon" />
+                  <EmailInput
+                    id="email"
+                    name="email"
+                    required
+                    placeholder="you@company.com"
+                    className={cn("auth-input", fieldError("email") && "border-red-500")}
+                    aria-invalid={!!fieldError("email")}
+                    onBlur={() => blurField("email")}
+                  />
+                </div>
+              </AuthFormField>
+
+              <AuthFormField
+                label="Phone"
+                htmlFor="phone"
+                error={fieldError("phone")}
+                hint={PHONE_HINT}
+              >
+                <div className="auth-input-wrap">
+                  <Phone className="auth-input-icon" />
+                  <PhoneInput
+                    id="phone"
+                    name="phone"
+                    required
+                    minDigits={FIELD_LIMITS.phone.exact}
+                    placeholder="9876543210"
+                    className={cn("auth-input", fieldError("phone") && "border-red-500")}
+                    aria-invalid={!!fieldError("phone")}
+                    onBlur={() => blurField("phone")}
+                  />
+                </div>
+              </AuthFormField>
+            </div>
+
+            <div className="auth-form-row auth-form-row-2">
+              <AuthFormField
+                label="Website (optional)"
+                htmlFor="website"
+                error={fieldError("website")}
+                hint="Must include https://"
+              >
+                <div className="auth-input-wrap">
+                  <Globe className="auth-input-icon" />
+                  <Input
+                    id="website"
+                    name="website"
+                    type="url"
+                    placeholder="https://example.com"
+                    className={cn("auth-input", fieldError("website") && "border-red-500")}
+                    aria-invalid={!!fieldError("website")}
+                    onBlur={() => blurField("website")}
+                  />
+                </div>
+              </AuthFormField>
+
+              <AuthFormField
+                label="Industry"
+                htmlFor="industry"
+                error={fieldError("industry")}
+                reserveHintSpace
+              >
+                <div className="auth-input-wrap">
+                  <Building2 className="auth-input-icon" />
+                  <Input
+                    id="industry"
+                    name="industry"
+                    required
+                    minLength={FIELD_LIMITS.industry.min}
+                    maxLength={FIELD_LIMITS.industry.max}
+                    placeholder="SaaS, FinTech, HR Tech…"
+                    className={cn("auth-input", fieldError("industry") && "border-red-500")}
+                    aria-invalid={!!fieldError("industry")}
+                    onBlur={() => blurField("industry")}
+                  />
+                </div>
+              </AuthFormField>
+            </div>
+
+            <div className="auth-form-row auth-form-row-password">
+                <AuthFormField
+                  label="Password"
+                  htmlFor="password"
+                  error={fieldError("password")}
+                  hint={PASSWORD_HINT}
+                >
                   <div className="auth-input-wrap">
                     <Lock className="auth-input-icon" />
                     <Input
@@ -337,6 +378,7 @@ export default function SellerRegisterForm({
                   label="Confirm Password"
                   htmlFor="confirmPassword"
                   error={fieldError("confirmPassword")}
+                  reserveHintSpace
                 >
                   <div className="auth-input-wrap">
                     <Lock className="auth-input-icon" />
@@ -361,7 +403,6 @@ export default function SellerRegisterForm({
                   </div>
                 </AuthFormField>
               </div>
-              <p className="text-[10px] leading-snug text-slate-400">{PASSWORD_HINT}</p>
 
               <Button
                 type="button"

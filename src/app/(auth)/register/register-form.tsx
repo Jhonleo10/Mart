@@ -99,44 +99,50 @@ export default function RegisterForm() {
       }
     >
       <form ref={formRef} onSubmit={handleSubmit} className="auth-form-compact auth-form-tight" noValidate>
-        <div className="auth-form-row auth-form-row-buyer">
+        <div className="auth-form-row auth-form-row-2">
           <AuthFormField label="Full Name" htmlFor="name" error={fieldError("name")}>
-          <div className="auth-input-wrap">
-            <User className="auth-input-icon" />
-            <Input
-              id="name"
-              name="name"
-              required
-              minLength={FIELD_LIMITS.name.min}
-              maxLength={FIELD_LIMITS.name.max}
-              placeholder="John Doe"
-              className={cn("auth-input", fieldError("name") && "border-red-500")}
-              aria-invalid={!!fieldError("name")}
-              onBlur={() => blurField("name")}
-            />
-          </div>
-        </AuthFormField>
+            <div className="auth-input-wrap">
+              <User className="auth-input-icon" />
+              <Input
+                id="name"
+                name="name"
+                required
+                minLength={FIELD_LIMITS.name.min}
+                maxLength={FIELD_LIMITS.name.max}
+                placeholder="John Doe"
+                className={cn("auth-input", fieldError("name") && "border-red-500")}
+                aria-invalid={!!fieldError("name")}
+                onBlur={() => blurField("name")}
+              />
+            </div>
+          </AuthFormField>
 
-        <AuthFormField label="Email" htmlFor="email" error={fieldError("email")}>
-          <div className="auth-input-wrap">
-            <Mail className="auth-input-icon" />
-            <EmailInput
-              id="email"
-              name="email"
-              required
-              placeholder="you@example.com"
-              className={cn("auth-input", fieldError("email") && "border-red-500")}
-              aria-invalid={!!fieldError("email")}
-              onBlur={() => blurField("email")}
-            />
-          </div>
-        </AuthFormField>
-        <p className="text-[10px] leading-snug text-slate-400">{EMAIL_HINT}</p>
+          <AuthFormField
+            label="Email"
+            htmlFor="email"
+            error={fieldError("email")}
+            hint={EMAIL_HINT}
+          >
+            <div className="auth-input-wrap">
+              <Mail className="auth-input-icon" />
+              <EmailInput
+                id="email"
+                name="email"
+                required
+                placeholder="you@example.com"
+                className={cn("auth-input", fieldError("email") && "border-red-500")}
+                aria-invalid={!!fieldError("email")}
+                onBlur={() => blurField("email")}
+              />
+            </div>
+          </AuthFormField>
+        </div>
 
         <AuthFormField
           label="Phone"
           htmlFor="phone"
           error={fieldError("phone")}
+          hint={PHONE_HINT}
         >
           <div className="auth-input-wrap">
             <Phone className="auth-input-icon" />
@@ -152,8 +158,6 @@ export default function RegisterForm() {
             />
           </div>
         </AuthFormField>
-        <p className="text-[10px] leading-snug text-slate-400">{PHONE_HINT}</p>
-        </div>
 
         <div className="auth-form-row auth-form-row-password">
           <AuthFormField label="Password" htmlFor="password" error={fieldError("password")}>

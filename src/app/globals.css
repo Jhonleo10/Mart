@@ -2699,6 +2699,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
+  min-width: 0;
 }
 
 .auth-field label {
@@ -3187,22 +3188,28 @@ body {
   }
 }
 
-.auth-form-row-buyer {
+.auth-form-row-2 {
   gap: 0.5rem;
 }
 
-@media (min-width: 768px) {
-  .auth-form-row-buyer {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+@media (min-width: 640px) {
+  .auth-form-row-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-.auth-form-row-seller {
+.auth-form-row-3 {
   gap: 0.5rem;
 }
 
-@media (min-width: 768px) {
-  .auth-form-row-seller {
+@media (min-width: 640px) {
+  .auth-form-row-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .auth-form-row-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
@@ -3211,7 +3218,7 @@ body {
   gap: 0.5rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .auth-form-row-password {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

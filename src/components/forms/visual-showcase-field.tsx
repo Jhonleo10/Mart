@@ -6,7 +6,9 @@ import { ImagePlus, Loader2, Plus, Trash2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useUploadThing } from "@/lib/uploadthing";
 import type { UploadFolder } from "@/lib/uploads/local";
+import { preferLocalFileUploads } from "@/lib/uploads/strategy";
 
 export interface ShowcaseSlot {
   id: string;
@@ -50,6 +52,15 @@ export function VisualShowcaseField({
   slotsRef.current = slots;
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
+  const { startUpload } = useUploadThing("productImages", {
+    onUploadError: (err) => {
+      const message = err.message.includes("Invalid token")
+        ? "Upload not configured. Add UPLOADTHING_TOKEN in Vercel env (UploadThing dashboard → API Keys → V7)."
+        : err.message;
+      toast.error(`Upload failed: ${message}`);
+    },
+  });
+
   const patchSlots = useCallback(
     (patcher: (current: ShowcaseSlot[]) => ShowcaseSlot[]) => {
       onChange(patcher(slotsRef.current));
@@ -85,20 +96,31 @@ export function VisualShowcaseField({
       );
 
       try {
-        const body = new FormData();
-        body.append("file", file);
-        body.append("folder", uploadFolder);
+        let url: string | undefined;
 
-        const res = await fetch("/api/upload", { method: "POST", body });
-        const data = (await res.json()) as { url?: string; error?: string };
+        if (preferLocalFileUploads()) {
+          const body = new FormData();
+          body.append("file", file);
+          body.append("folder", uploadFolder);
 
-        if (!res.ok || !data.url) {
-          throw new Error(data.error ?? "Upload failed");
+          const res = await fetch("/api/upload", { method: "POST", body });
+          const data = (await res.json()) as { url?: string; error?: string };
+
+          if (!res.ok || !data.url) {
+            throw new Error(data.error ?? "Upload failed");
+          }
+          url = data.url;
+        } else {
+          const results = await startUpload([file]);
+          url = results?.[0]?.ufsUrl ?? results?.[0]?.url;
+          if (!url) {
+            throw new Error("Upload failed — no URL returned");
+          }
         }
 
         patchSlots((current) =>
           current.map((s) =>
-            s.id === id ? { ...s, url: data.url!, uploading: false } : s,
+            s.id === id ? { ...s, url: url!, uploading: false } : s,
           ),
         );
         toast.success("Image uploaded");
@@ -109,7 +131,7 @@ export function VisualShowcaseField({
         toast.error(err instanceof Error ? err.message : "Upload failed");
       }
     },
-    [patchSlots, uploadFolder],
+    [patchSlots, startUpload, uploadFolder],
   );
 
   return (
@@ -127,7 +149,9 @@ export function VisualShowcaseField({
           <div>
             <h2 className="text-xl font-bold leading-none text-slate-900">Visual Showcase</h2>
             <p className="mt-1.5 text-sm font-medium text-slate-500">
-              Upload screenshots — stored in <code className="text-xs">public/uploads</code>
+              {preferLocalFileUploads()
+                ? "Upload screenshots — stored in public/uploads (local dev)"
+                : "Upload product screenshots — stored in cloud (UploadThing)"}
             </p>
           </div>
         </div>

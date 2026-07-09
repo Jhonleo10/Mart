@@ -7,6 +7,13 @@ const ALLOWED_FOLDERS = new Set<UploadFolder>(["products", "companies"]);
 
 export async function POST(request: Request) {
   try {
+    if (process.env.VERCEL === "1") {
+      throw new AppError(
+        "Local file uploads are not available in production. Configure UPLOADTHING_TOKEN for cloud image uploads.",
+        503,
+      );
+    }
+
     const session = await auth();
     if (!session?.user) {
       throw new AppError("Unauthorized", 401);

@@ -7,6 +7,7 @@ export function AuthFormField({
   htmlFor,
   error,
   hint,
+  reserveHintSpace = false,
   children,
   className,
 }: {
@@ -14,6 +15,7 @@ export function AuthFormField({
   htmlFor: string;
   error?: string;
   hint?: string;
+  reserveHintSpace?: boolean;
   children: ReactNode;
   className?: string;
 }) {
@@ -22,7 +24,12 @@ export function AuthFormField({
       <Label htmlFor={htmlFor}>{label}</Label>
       {children}
       {error ? <p className="form-field-error">{error}</p> : null}
-      {!error && hint ? <p className="mt-1 text-[11px] text-slate-400">{hint}</p> : null}
+      {!error && hint ? <p className="text-[10px] leading-snug text-slate-400">{hint}</p> : null}
+      {!error && !hint && reserveHintSpace ? (
+        <p className="text-[10px] leading-snug text-transparent select-none" aria-hidden="true">
+          &nbsp;
+        </p>
+      ) : null}
     </div>
   );
 }
