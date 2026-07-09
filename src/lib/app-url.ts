@@ -13,14 +13,41 @@ function localhostBaseUrl(): string {
   return `http://localhost:${port}`;
 }
 
-function configuredBaseUrl(): string | null {
-  const configured =
-    process.env.NEXT_PUBLIC_APP_URL ??
-    process.env.AUTH_URL ??
-    process.env.NEXTAUTH_URL ??
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null);
+function isLocalhostUrl(url: string): boolean {
+  try {
+    const host = new URL(normalizeBaseUrl(url)).hostname;
+    return host === "localhost" || host === "127.0.0.1";
+  } catch {
+    return /localhost|127\.0\.0\.1/i.test(url);
+  }
+}
 
-  return configured ? normalizeBaseUrl(configured) : null;
+/**
+ * Canonical public app URL for Auth.js callbacks and absolute links.
+ * Never returns localhost when running on Vercel.
+ */
+function configuredBaseUrl(): string | null {
+  const candidates = [
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.AUTH_URL,
+    process.env.NEXTAUTH_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : null,
+    process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null,
+  ];
+
+  for (const candidate of candidates) {
+    if (!candidate?.trim()) continue;
+    const normalized = normalizeBaseUrl(candidate);
+    // Reject localhost when deployed — env often still holds local defaults.
+    if (process.env.VERCEL === "1" && isLocalhostUrl(normalized)) {
+      continue;
+    }
+    return normalized;
+  }
+
+  return null;
 }
 
 /** Prefer the incoming request host so dev works on any port (3000, 3001, 3002, …). */
@@ -66,12 +93,21 @@ export async function runWithAppBaseUrl<T>(fn: () => T | Promise<T>): Promise<T>
 }
 
 /**
- * In development, Auth.js must not pin callbacks to a fixed localhost port.
- * trustHost is enabled in auth.config; clearing AUTH_URL avoids port mismatches.
+ * Align Auth.js AUTH_URL / NEXTAUTH_URL with the real deployment host.
+ * - Development: clear fixed ports so callbacks match any local port
+ * - Vercel: never keep localhost; prefer NEXT_PUBLIC_APP_URL / VERCEL_URL
  */
 export function configureAuthUrlForRuntime() {
-  if (process.env.NODE_ENV !== "development") return;
+  if (process.env.NODE_ENV === "development") {
+    delete process.env.AUTH_URL;
+    delete process.env.NEXTAUTH_URL;
+    return;
+  }
 
-  delete process.env.AUTH_URL;
-  delete process.env.NEXTAUTH_URL;
+  const base = configuredBaseUrl();
+  if (!base) return;
+
+  // Auth.js v5 reads AUTH_URL; also set NEXTAUTH_URL for compatibility.
+  process.env.AUTH_URL = base;
+  process.env.NEXTAUTH_URL = base;
 }

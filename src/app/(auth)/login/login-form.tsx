@@ -70,28 +70,34 @@ export default function LoginForm() {
 
     setLoading(true);
     const email = formData.get("email") as string;
-    const { loginUser } = await import("@/actions/auth.actions");
-    const result = await loginUser(formData);
-    setLoading(false);
+    try {
+      const { loginUser } = await import("@/actions/auth.actions");
+      const result = await loginUser(formData);
 
-    if (result && "error" in result) {
-      toast.error(result.error);
-      if (result.error.toLowerCase().includes("verify")) {
-        router.push(`/verify-user?email=${encodeURIComponent(email)}`);
+      if (result && "error" in result) {
+        toast.error(result.error);
+        if (result.error.toLowerCase().includes("verify")) {
+          router.push(`/verify-user?email=${encodeURIComponent(email)}`);
+        }
+        return;
       }
-      return;
-    }
 
-    toast.success("Welcome back!");
-    const callbackUrl = searchParams.get("callbackUrl");
-    const redirectTo =
-      callbackUrl &&
-      isSafeCallbackUrl(callbackUrl) &&
-      result.data?.role === "USER"
-        ? callbackUrl
-        : (result.data?.redirectTo ?? AUTH_PATHS.login);
-    router.push(redirectTo);
-    router.refresh();
+      toast.success("Welcome back!");
+      const callbackUrl = searchParams.get("callbackUrl");
+      const redirectTo =
+        callbackUrl &&
+        isSafeCallbackUrl(callbackUrl) &&
+        result.data?.role === "USER"
+          ? callbackUrl
+          : (result.data?.redirectTo ?? AUTH_PATHS.login);
+      router.push(redirectTo);
+      router.refresh();
+    } catch (error) {
+      console.error("[login]", error);
+      toast.error("Sign-in failed. Please try again in a moment.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (

@@ -61,6 +61,12 @@ const PRESET_CONFIG: Record<RateLimitPreset, { limit: number; windowMs: number }
   search: { limit: 40, windowMs: 60_000 },
 };
 
+let warnedMissingUpstash = false;
+
+/**
+ * Rate limit with Upstash when configured; otherwise in-memory fallback.
+ * Never throws — login must not hang/fail solely due to missing Redis.
+ */
 export async function rateLimit(
   key: string,
   preset: RateLimitPreset = "api",
@@ -69,12 +75,20 @@ export async function rateLimit(
   const limiter = upstashLimiters[preset];
 
   if (limiter) {
-    const result = await limiter.limit(key);
-    return { success: result.success, remaining: result.remaining };
+    try {
+      const result = await limiter.limit(key);
+      return { success: result.success, remaining: result.remaining };
+    } catch (error) {
+      console.warn(`[rateLimit:${preset}] Upstash error, using in-memory fallback.`, error);
+      return memoryRateLimit(`${preset}:${key}`, config.limit, config.windowMs);
+    }
   }
 
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("Rate limiting unavailable: UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN are required");
+  if (process.env.NODE_ENV === "production" && !warnedMissingUpstash) {
+    warnedMissingUpstash = true;
+    console.warn(
+      "[rateLimit] UPSTASH_REDIS_REST_URL / TOKEN not set — using in-memory rate limits (not shared across serverless instances).",
+    );
   }
 
   return memoryRateLimit(`${preset}:${key}`, config.limit, config.windowMs);

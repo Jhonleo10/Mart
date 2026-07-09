@@ -1,15 +1,31 @@
 import type { NextAuthConfig } from "next-auth";
 
+function useSecureCookies(): boolean {
+  // Prefer explicit public URL protocol; fall back to production NODE_ENV.
+  const url =
+    process.env.AUTH_URL ??
+    process.env.NEXTAUTH_URL ??
+    process.env.NEXT_PUBLIC_APP_URL ??
+    "";
+  if (url.startsWith("https://")) return true;
+  if (url.startsWith("http://")) return false;
+  return process.env.NODE_ENV === "production" || process.env.VERCEL === "1";
+}
+
+const secure = useSecureCookies();
+
 const secureCookieOptions = {
   httpOnly: true,
   sameSite: "lax" as const,
   path: "/",
-  secure: process.env.NODE_ENV === "production",
+  secure,
 };
 
 /**
  * Shared Auth.js configuration — Edge-safe.
  * No Prisma, no providers, no adapters, no filesystem access.
+ * trustHost: true lets Auth.js use the incoming Host / x-forwarded-host
+ * when AUTH_URL is not set correctly.
  */
 export const authConfig = {
   trustHost: true,
@@ -37,10 +53,7 @@ export const authConfig = {
   },
   cookies: {
     sessionToken: {
-      name:
-        process.env.NODE_ENV === "production"
-          ? "__Secure-authjs.session-token"
-          : "authjs.session-token",
+      name: secure ? "__Secure-authjs.session-token" : "authjs.session-token",
       options: secureCookieOptions,
     },
   },
