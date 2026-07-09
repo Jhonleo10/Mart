@@ -14,6 +14,7 @@ export const ADMIN_NAV: NavItem[] = [
   { href: "/admin/payments", label: "Payments", iconName: "CreditCard" },
   { href: "/admin/analytics", label: "Analytics", iconName: "BarChart3" },
   { href: "/admin/activity", label: "Activity", iconName: "Activity" },
+  { href: "/admin/sessions", label: "Sessions", iconName: "Shield" },
   { href: "/admin/pricing", label: "Pricing", iconName: "IndianRupee" },
   { href: "/admin/settings", label: "Settings", iconName: "Settings" },
 ];

@@ -74,8 +74,8 @@ const nextConfig: NextConfig = {
   ],
 
   experimental: {
-    // Reuse server component fetch/cache data across HMR edits (faster refresh).
-    serverComponentsHmrCache: true,
+    // Disabled: caching personalized auth chrome (Header) caused cross-session leakage in dev.
+    serverComponentsHmrCache: false,
     // Extra packages beyond Next.js defaults (lucide-react, recharts are built-in).
     optimizePackageImports: [
       "@radix-ui/react-dialog",

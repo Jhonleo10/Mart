@@ -13,6 +13,7 @@ import {
   Search,
   Sparkles,
   Video,
+  Shield,
   type LucideIcon,
 } from "lucide-react";
 
@@ -30,7 +31,8 @@ type IconName =
   | "Activity"
   | "Search"
   | "Sparkles"
-  | "Video";
+  | "Video"
+  | "Shield";
 
 const ICON_MAP: Record<IconName, LucideIcon> = {
   LayoutDashboard,
@@ -47,6 +49,7 @@ const ICON_MAP: Record<IconName, LucideIcon> = {
   Search,
   Sparkles,
   Video,
+  Shield,
 };
 
 export type { IconName };

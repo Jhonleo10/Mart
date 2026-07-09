@@ -66,7 +66,7 @@ export const authorizedCallback: NonNullable<NextAuthConfig["callbacks"]>["autho
   return true;
 };
 
-/** JWT callback without database — Edge-safe. */
+/** JWT callback without database — Edge-safe (no UserSession DB validation). */
 export function edgeJwtCallback({
   token,
   user,

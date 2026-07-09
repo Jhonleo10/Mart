@@ -15,6 +15,12 @@ import {
   loadUserForLogin,
   postLoginRedirectForUser,
 } from "@/lib/auth/login-guards";
+import { SESSION_ALREADY_ACTIVE_MESSAGE } from "@/lib/auth/session/constants";
+import { userSessionService } from "@/services/user-session.service";
+import {
+  clearSessionCookie,
+  getSessionTokenFromCookies,
+} from "@/lib/auth/session/cookie";
 import type { ActionResult } from "@/lib/action-types";
 import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
@@ -44,6 +50,10 @@ export async function loginUser(
     const user = await loadUserForLogin(email);
     if (user?.password) {
       await assertLoginAllowed(user);
+      const hasActive = await userSessionService.hasActiveSession(user.id);
+      if (hasActive) {
+        return { error: SESSION_ALREADY_ACTIVE_MESSAGE };
+      }
     }
 
     try {
@@ -54,6 +64,12 @@ export async function loginUser(
       } else {
         throw e;
       }
+    }
+
+    const { auth } = await import("@/lib/auth");
+    const session = await auth();
+    if (!session?.user) {
+      return { error: SESSION_ALREADY_ACTIVE_MESSAGE };
     }
 
     const loggedIn = await loadUserForLogin(email);
@@ -72,7 +88,12 @@ export async function loginUser(
 export async function signOutAction() {
   const { auth } = await import("@/lib/auth");
   const session = await auth();
+  const rawToken = await getSessionTokenFromCookies();
+
   if (session?.user) {
+    if (rawToken) {
+      await userSessionService.revokeByToken(session.user.id, rawToken);
+    }
     await auditLog({
       userId: session.user.id,
       action: "LOGOUT",
@@ -80,6 +101,8 @@ export async function signOutAction() {
       entityId: session.user.id,
     });
   }
+
+  await clearSessionCookie();
   await signOut({ redirectTo: "/" });
 }
 
@@ -93,6 +116,7 @@ export async function logoutAllDevicesAction() {
     entityType: "User",
     entityId: session.user.id,
   });
+  await clearSessionCookie();
   await signOut({ redirectTo: "/" });
 }
 
@@ -146,6 +170,7 @@ export async function resetPassword(formData: FormData): Promise<ActionResult> {
     }
 
     const hashed = await hashPassword(parsed.data.password);
+    await userSessionService.revokeAllForUser(record.userId);
     await prisma.$transaction([
       prisma.user.update({
         where: { id: record.userId },

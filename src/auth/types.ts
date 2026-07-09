@@ -21,6 +21,7 @@ declare module "@auth/core/jwt" {
     id: string;
     role: Role;
     sessionVersion?: number;
+    userSessionId?: string;
   }
 }
 

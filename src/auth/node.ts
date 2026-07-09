@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { JWT } from "@auth/core/jwt";
 import type { User } from "next-auth";
+import { headers } from "next/headers";
 import { configureAuthUrlForRuntime } from "@/lib/app-url";
 import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/auth/config";
@@ -12,13 +13,27 @@ import {
 } from "@/auth/callbacks";
 import { createCredentialsProvider } from "@/auth/providers";
 import type { Role } from "@prisma/client";
+import {
+  clearSessionCookie,
+  getSessionTokenFromCookies,
+  setSessionCookie,
+} from "@/lib/auth/session/cookie";
+import { getSessionMaxAgeMs } from "@/lib/auth/session/constants";
+import {
+  SessionConflictError,
+  userSessionService,
+} from "@/services/user-session.service";
 import "@/auth/types";
 
 configureAuthUrlForRuntime();
 
+function invalidateToken(token: JWT): JWT {
+  return { ...token, exp: 0, userSessionId: undefined };
+}
+
 /**
- * Node.js JWT callback — validates session version against the database.
- * Only runs in Node.js runtime (Server Components, Route Handlers, Server Actions).
+ * Node.js JWT callback — validates session version and UserSession against the database.
+ * Only runs in Node.js runtime (Server Components, Route Handlers, Server Actions, middleware).
  */
 async function nodeJwtCallback({
   token,
@@ -28,19 +43,61 @@ async function nodeJwtCallback({
   user?: User | null;
 }): Promise<JWT> {
   if (user) {
-    return edgeJwtCallback({ token, user });
+    try {
+      const hdrs = await headers();
+      const created = await userSessionService.createSession({
+        userId: user.id!,
+        headers: hdrs,
+      });
+      await setSessionCookie(created.rawToken, created.expiresAt);
+      const next = edgeJwtCallback({ token, user });
+      next.userSessionId = created.id;
+      return next;
+    } catch (error) {
+      if (error instanceof SessionConflictError) {
+        await clearSessionCookie();
+        return invalidateToken(token);
+      }
+      throw error;
+    }
   }
 
-  if (token.id) {
-    const dbUser = await prisma.user.findUnique({
-      where: { id: token.id as string },
-      select: { sessionVersion: true, role: true },
-    });
-    if (!dbUser || dbUser.sessionVersion !== (token.sessionVersion ?? 0)) {
-      return { ...token, exp: 0 };
-    }
-    token.role = dbUser.role;
+  if (!token.id) {
+    return token;
   }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: token.id as string },
+    select: { sessionVersion: true, role: true },
+  });
+  if (!dbUser || dbUser.sessionVersion !== (token.sessionVersion ?? 0)) {
+    await clearSessionCookie();
+    if (token.userSessionId) {
+      await userSessionService.revokeSession(token.userSessionId as string).catch(() => undefined);
+    }
+    return invalidateToken(token);
+  }
+  token.role = dbUser.role;
+
+  const sessionId = token.userSessionId as string | undefined;
+  if (!sessionId) {
+    await clearSessionCookie();
+    return invalidateToken(token);
+  }
+
+  const rawToken = await getSessionTokenFromCookies();
+  if (!rawToken) {
+    await userSessionService.revokeSession(sessionId).catch(() => undefined);
+    return invalidateToken(token);
+  }
+
+  const valid = await userSessionService.validateSession(sessionId, rawToken);
+  if (!valid) {
+    await clearSessionCookie();
+    return invalidateToken(token);
+  }
+
+  await setSessionCookie(rawToken, new Date(Date.now() + getSessionMaxAgeMs()));
 
   return token;
 }
@@ -98,6 +155,7 @@ export async function requireRole(...roles: Role[]) {
 }
 
 export async function logoutAllDevices(userId: string) {
+  await userSessionService.revokeAllForUser(userId);
   await prisma.$transaction([
     prisma.session.deleteMany({ where: { userId } }),
     prisma.user.update({

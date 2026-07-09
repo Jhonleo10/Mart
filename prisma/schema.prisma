@@ -128,6 +128,7 @@ model User {
   otpVerification     OtpVerification?
   requirementProfile  UserRequirementProfile?
   recentlyViewed      ProductRecentlyViewed[]
+  userSessions        UserSession[]
 
   @@index([email])
   @@index([role])
@@ -158,6 +159,29 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/// Server-side session record — one active session per user (enforced in application layer).
+model UserSession {
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String
+  sessionTokenHash String   @unique
+  deviceName       String?
+  browser          String?
+  operatingSystem  String?
+  ipAddress        String?
+  userAgent        String?  @db.Text
+  createdAt        DateTime @default(now())
+  lastActivity     DateTime @default(now())
+  expiresAt        DateTime
+  isActive         Boolean  @default(true)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isActive])
+  @@index([expiresAt])
+  @@index([lastActivity])
+  @@index([isActive, expiresAt])
 }
 
 model VerificationToken {

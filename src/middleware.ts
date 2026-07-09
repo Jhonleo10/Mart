@@ -1,13 +1,10 @@
-import { edgeAuthMiddleware } from "@/auth/edge";
+import { auth } from "@/auth/node";
 
 /**
- * Route protection middleware.
- *
- * Uses the Edge-safe Auth.js config (no Prisma/providers) with the stable
- * Node.js middleware runtime (Next.js 15.5+) to avoid Edge/jose bundling
- * limitations while keeping auth logic isolated from database code.
+ * Route protection middleware — Node.js runtime with full UserSession validation
+ * via the Node Auth.js JWT callback (database-backed, per-browser HttpOnly cookie).
  */
-export default edgeAuthMiddleware;
+export default auth;
 
 export const config = {
   runtime: "nodejs",
@@ -28,5 +25,12 @@ export const config = {
     "/reset-password",
     "/verify-user",
     "/verify-company",
+    "/api/admin/:path*",
+    "/api/meetings/:path*",
+    "/api/intelligence/:path*",
+    "/api/google/:path*",
+    "/api/upload",
+    "/api/uploadthing/:path*",
+    "/api/analytics/:path*",
   ],
 };
