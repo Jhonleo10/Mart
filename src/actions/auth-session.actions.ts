@@ -50,10 +50,8 @@ export async function loginUser(
     const user = await loadUserForLogin(email);
     if (user?.password) {
       await assertLoginAllowed(user);
-      const hasActive = await userSessionService.hasActiveSession(user.id);
-      if (hasActive) {
-        return { error: SESSION_ALREADY_ACTIVE_MESSAGE };
-      }
+      const existingCookie = await getSessionTokenFromCookies();
+      await userSessionService.assertLoginAllowedForBrowser(user.id, existingCookie);
     }
 
     try {
@@ -61,25 +59,39 @@ export async function loginUser(
     } catch (e: unknown) {
       if (isBenignAuthRedirect(e)) {
         // Auth.js / Next.js may throw redirect even with redirect:false — treat as success.
+      } else if (e instanceof AuthError) {
+        return { error: "Invalid email or password" };
       } else {
         throw e;
       }
     }
 
-    const { auth } = await import("@/lib/auth");
-    const session = await auth();
-    if (!session?.user) {
-      return { error: SESSION_ALREADY_ACTIVE_MESSAGE };
+    const loggedIn = await loadUserForLogin(email);
+    if (!loggedIn) {
+      return { error: "Invalid email or password" };
     }
 
-    const loggedIn = await loadUserForLogin(email);
-    const role = loggedIn?.role ?? "USER";
-    const redirectTo = loggedIn ? postLoginRedirectForUser(loggedIn) : dashboardForRole(role);
+    const sessionCreated = await userSessionService.hasActiveSession(loggedIn.id);
+    if (!sessionCreated) {
+      return {
+        error:
+          "Sign-in could not be completed. If you were already logged in elsewhere, log out there first and try again.",
+      };
+    }
+
+    const role = loggedIn.role ?? "USER";
+    const redirectTo = postLoginRedirectForUser(loggedIn);
 
     return { success: true, data: { role, redirectTo } };
   } catch (error) {
     if (error instanceof AuthError) {
       return { error: "Invalid email or password" };
+    }
+    if (
+      error instanceof AppError &&
+      error.code === "SESSION_ALREADY_ACTIVE"
+    ) {
+      return { error: SESSION_ALREADY_ACTIVE_MESSAGE };
     }
     return handleActionError(error);
   }

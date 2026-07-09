@@ -10,8 +10,10 @@ export function isSafeCallbackUrl(url: string): boolean {
   if (url.includes("://") || url.includes("\\")) return false;
 
   try {
-    const parsed = new URL(url, "http://localhost");
-    if (parsed.hostname !== "localhost") return false;
+    const appOrigin = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const allowedHost = new URL(appOrigin).hostname;
+    const parsed = new URL(url, appOrigin);
+    if (parsed.hostname !== allowedHost && parsed.hostname !== "localhost") return false;
     if (parsed.pathname !== url.split("?")[0]?.split("#")[0]) return false;
     return true;
   } catch {

@@ -35,6 +35,27 @@ export const userSessionService = {
     return active !== null;
   },
 
+  /**
+   * Enforce single active session. Allows login when the prior session is on this browser
+   * (stale JWT) or orphaned in the database (logout did not revoke the server session).
+   */
+  async assertLoginAllowedForBrowser(userId: string, rawCookieToken: string | null): Promise<void> {
+    await this.purgeExpiredSessions();
+    const active = await userSessionRepository.findActiveByUserId(userId);
+    if (!active) return;
+
+    if (rawCookieToken) {
+      const hash = hashSessionToken(rawCookieToken);
+      if (active.sessionTokenHash === hash) {
+        await userSessionRepository.deactivate(active.id);
+        return;
+      }
+      throw new SessionConflictError();
+    }
+
+    await userSessionRepository.deactivate(active.id);
+  },
+
   async createSession(input: {
     userId: string;
     headers: Headers;

@@ -87,17 +87,22 @@ async function nodeJwtCallback({
 
   const rawToken = await getSessionTokenFromCookies();
   if (!rawToken) {
-    await userSessionService.revokeSession(sessionId).catch(() => undefined);
+    // Cookie may not be readable in the same request it was set (Server Actions).
+    // Invalidate the JWT locally without revoking the DB session — another request may still hold the cookie.
     return invalidateToken(token);
   }
 
   const valid = await userSessionService.validateSession(sessionId, rawToken);
   if (!valid) {
-    await clearSessionCookie();
+    await clearSessionCookie().catch(() => undefined);
     return invalidateToken(token);
   }
 
-  await setSessionCookie(rawToken, new Date(Date.now() + getSessionMaxAgeMs()));
+  try {
+    await setSessionCookie(rawToken, new Date(Date.now() + getSessionMaxAgeMs()));
+  } catch {
+    // Rolling refresh is best-effort (e.g. middleware may not allow cookie mutation).
+  }
 
   return token;
 }
@@ -110,6 +115,16 @@ const { handlers, auth: defaultAuth, signIn, signOut } = NextAuth({
     authorized: authorizedCallback,
     jwt: nodeJwtCallback,
     session: edgeSessionCallback,
+  },
+  events: {
+    async signOut(message) {
+      if ("token" in message && message.token?.userSessionId) {
+        await userSessionService
+          .revokeSession(message.token.userSessionId as string)
+          .catch(() => undefined);
+      }
+      await clearSessionCookie().catch(() => undefined);
+    },
   },
 });
 

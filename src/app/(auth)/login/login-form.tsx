@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,6 @@ import {
 } from "@/lib/admin-easter-egg";
 
 export default function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -74,10 +73,10 @@ export default function LoginForm() {
       const { loginUser } = await import("@/actions/auth-session.actions");
       const result = await loginUser(formData);
 
-      if (result && "error" in result) {
+      if ("error" in result) {
         toast.error(result.error);
         if (result.error.toLowerCase().includes("verify")) {
-          router.push(`/verify-user?email=${encodeURIComponent(email)}`);
+          window.location.assign(`/verify-user?email=${encodeURIComponent(email)}`);
         }
         return;
       }
@@ -90,8 +89,8 @@ export default function LoginForm() {
         result.data?.role === "USER"
           ? callbackUrl
           : (result.data?.redirectTo ?? AUTH_PATHS.login);
-      router.push(redirectTo);
-      router.refresh();
+      // Full navigation ensures HttpOnly session cookies from the server action are sent.
+      window.location.assign(redirectTo);
     } catch (error) {
       console.error("[login]", error);
       toast.error("Sign-in failed. Please try again in a moment.");

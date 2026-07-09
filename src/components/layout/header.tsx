@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Session } from "next-auth";
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
+import { signOutAction } from "@/actions/auth.actions";
 import { ROLE_ROUTES } from "@/lib/rbac";
 import { AUTH_PATHS } from "@/lib/auth-paths";
 import { Button } from "@/components/ui/button";
@@ -57,12 +58,7 @@ export async function Header() {
                   Dashboard
                 </Link>
               )}
-              <form
-                action={async () => {
-                  "use server";
-                  await signOut({ redirectTo: "/" });
-                }}
-              >
+              <form action={signOutAction}>
                 <Button type="submit" variant="outline" size="sm">
                   Sign Out
                 </Button>
