@@ -45,20 +45,6 @@ export const authorizedCallback: NonNullable<NextAuthConfig["callbacks"]>["autho
     return auth?.user?.role === "USER";
   }
 
-  const isServerAction = request.headers.has("next-action");
-
-  if (
-    isLoggedIn &&
-    ["/login", "/register", "/forgot-password"].includes(pathname) &&
-    !isServerAction
-  ) {
-    const role = auth?.user?.role;
-    if (role === "USER") return Response.redirect(new URL("/user/dashboard", nextUrl));
-    if (role === "ADMIN") return Response.redirect(new URL("/admin/dashboard", nextUrl));
-    if (role === "COMPANY") return Response.redirect(new URL("/company/dashboard", nextUrl));
-    return Response.redirect(new URL("/", nextUrl));
-  }
-
   if (isLoggedIn && ["/verify-user", "/verify-company", "/reset-password"].includes(pathname)) {
     return true;
   }
