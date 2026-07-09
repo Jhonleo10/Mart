@@ -2,7 +2,6 @@
 
 import { signIn, signOut, logoutAllDevices } from "@/lib/auth";
 import { AppError, handleActionError } from "@/lib/errors";
-import { emailService } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
 import { hashPassword } from "@/lib/security/password";
 import { auditLog } from "@/lib/security/audit";
@@ -19,6 +18,18 @@ import {
 import type { ActionResult } from "@/lib/action-types";
 import { AuthError } from "next-auth";
 import { revalidatePath } from "next/cache";
+
+function isBenignAuthRedirect(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const err = error as { message?: string; digest?: string };
+  const digest = String(err.digest ?? "");
+  const message = String(err.message ?? "");
+  return (
+    message === "NEXT_REDIRECT" ||
+    digest.startsWith("NEXT_REDIRECT") ||
+    message.toLowerCase().includes("redirect")
+  );
+}
 
 export async function loginUser(
   formData: FormData,
@@ -38,11 +49,9 @@ export async function loginUser(
     try {
       await signIn("credentials", { email, password, redirect: false });
     } catch (e: unknown) {
-      const err = e as { message?: string; digest?: string };
-      const isNextRedirect =
-        err?.message === "NEXT_REDIRECT" ||
-        (err && typeof err === "object" && "digest" in err && String(err.digest).startsWith("NEXT_REDIRECT"));
-      if (!isNextRedirect) {
+      if (isBenignAuthRedirect(e)) {
+        // Auth.js / Next.js may throw redirect even with redirect:false — treat as success.
+      } else {
         throw e;
       }
     }
@@ -101,6 +110,7 @@ export async function requestPasswordReset(formData: FormData): Promise<ActionRe
 
     const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
     if (user) {
+      const { emailService } = await import("@/lib/email");
       await passwordResetRepository.invalidateForUser(user.id);
       const token = generateToken();
       await passwordResetRepository.create(user.id, token, resetTokenExpiry(30));
@@ -144,6 +154,7 @@ export async function resetPassword(formData: FormData): Promise<ActionResult> {
       prisma.session.deleteMany({ where: { userId: record.userId } }),
     ]);
     await passwordResetRepository.markUsed(record.id);
+    const { emailService } = await import("@/lib/email");
     await emailService.passwordChanged(record.user.email, record.user.name ?? "User");
 
     await auditLog({

@@ -71,7 +71,7 @@ export default function LoginForm() {
     setLoading(true);
     const email = formData.get("email") as string;
     try {
-      const { loginUser } = await import("@/actions/auth.actions");
+      const { loginUser } = await import("@/actions/auth-session.actions");
       const result = await loginUser(formData);
 
       if (result && "error" in result) {
