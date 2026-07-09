@@ -13,6 +13,7 @@ import type { UploadFolder } from "@/lib/uploads/local";
 import { preferLocalFileUploads } from "@/lib/uploads/strategy";
 import { UPLOAD_ACCEPT } from "@/lib/uploads/constants";
 import { mapUploadError } from "@/lib/uploads/errors";
+import { extractUploadUrl } from "@/lib/uploads/extract-url";
 import { validateUploadFile } from "@/lib/security/upload";
 
 type UploadEndpoint = "companyLogo" | "productImages";
@@ -45,7 +46,7 @@ export function ImageUploadField({
 
   const { startUpload, isUploading: isUploadThingUploading } = useUploadThing(endpoint, {
     onClientUploadComplete: (res) => {
-      const url = res[0]?.ufsUrl ?? res[0]?.url;
+      const url = extractUploadUrl(res[0]);
       if (url) {
         onChange(url);
         setPreview(null);

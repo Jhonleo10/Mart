@@ -29,12 +29,12 @@ export function mapUploadError(error: unknown): string {
     return "Network error while uploading. Check your connection and try again.";
   }
 
-  if (lower.includes("not available in production") || lower.includes("uploadthing")) {
+  if (lower.includes("not available in production")) {
     return message;
   }
 
   if (lower.includes("no url returned")) {
-    return "Upload completed but no image URL was returned. Please try again.";
+    return "Upload finished but no image URL was returned. Try again or paste the image URL manually.";
   }
 
   return message || "Unexpected upload error. Please try again.";

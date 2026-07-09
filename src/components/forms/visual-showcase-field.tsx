@@ -11,6 +11,7 @@ import type { UploadFolder } from "@/lib/uploads/local";
 import { preferLocalFileUploads } from "@/lib/uploads/strategy";
 import { UPLOAD_ACCEPT, UPLOAD_MAX_FILE_COUNT } from "@/lib/uploads/constants";
 import { mapUploadError } from "@/lib/uploads/errors";
+import { extractUploadUrl } from "@/lib/uploads/extract-url";
 import { isValidImageRef } from "@/lib/uploads/url-validation";
 import { validateUploadFile } from "@/lib/security/upload";
 
@@ -46,13 +47,8 @@ export function VisualShowcaseField({
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const slotsRef = useRef(slots);
   slotsRef.current = slots;
+  const pendingSlotRef = useRef<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
-
-  const { startUpload } = useUploadThing("productImages", {
-    onUploadError: (err) => {
-      toast.error(`Upload failed: ${mapUploadError(err)}`);
-    },
-  });
 
   const patchSlots = useCallback(
     (patcher: (current: ShowcaseSlot[]) => ShowcaseSlot[]) => {
@@ -60,6 +56,37 @@ export function VisualShowcaseField({
     },
     [onChange],
   );
+
+  const applyUploadedUrl = useCallback(
+    (slotId: string, url: string) => {
+      patchSlots((current) =>
+        current.map((s) => (s.id === slotId ? { ...s, url, uploading: false } : s)),
+      );
+      toast.success("Image uploaded");
+    },
+    [patchSlots],
+  );
+
+  const { startUpload } = useUploadThing("productImages", {
+    onClientUploadComplete: (res) => {
+      const slotId = pendingSlotRef.current;
+      const url = extractUploadUrl(res[0]);
+      if (slotId && url) {
+        applyUploadedUrl(slotId, url);
+        pendingSlotRef.current = null;
+      }
+    },
+    onUploadError: (err) => {
+      const slotId = pendingSlotRef.current;
+      if (slotId) {
+        patchSlots((current) =>
+          current.map((s) => (s.id === slotId ? { ...s, uploading: false } : s)),
+        );
+        pendingSlotRef.current = null;
+      }
+      toast.error(`Upload failed: ${mapUploadError(err)}`);
+    },
+  });
 
   const addSlot = () => {
     if (slotsRef.current.length >= MAX_SLOTS) {
@@ -94,8 +121,6 @@ export function VisualShowcaseField({
       );
 
       try {
-        let url: string | undefined;
-
         if (preferLocalFileUploads()) {
           const body = new FormData();
           body.append("file", file);
@@ -107,21 +132,18 @@ export function VisualShowcaseField({
           if (!res.ok || !data.url) {
             throw new Error(data.error ?? "Upload failed");
           }
-          url = data.url;
+          applyUploadedUrl(id, data.url);
         } else {
+          pendingSlotRef.current = id;
           const results = await startUpload([file]);
-          url = results?.[0]?.ufsUrl ?? results?.[0]?.url;
-          if (!url) {
+          const url = extractUploadUrl(results?.[0]);
+          if (url) {
+            applyUploadedUrl(id, url);
+            pendingSlotRef.current = null;
+          } else if (pendingSlotRef.current === id) {
             throw new Error("Upload failed — no URL returned");
           }
         }
-
-        patchSlots((current) =>
-          current.map((s) =>
-            s.id === id ? { ...s, url: url!, uploading: false } : s,
-          ),
-        );
-        toast.success("Image uploaded");
       } catch (err) {
         patchSlots((current) =>
           current.map((s) => (s.id === id ? { ...s, uploading: false } : s)),
@@ -129,7 +151,7 @@ export function VisualShowcaseField({
         toast.error(mapUploadError(err));
       }
     },
-    [patchSlots, startUpload, uploadFolder],
+    [applyUploadedUrl, patchSlots, startUpload, uploadFolder],
   );
 
   return (
