@@ -2,10 +2,26 @@ import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
 import { validateUploadFile } from "@/lib/security/upload";
 import { AppError } from "@/lib/errors";
+import { preferLocalFileUploads } from "@/lib/uploads/strategy";
+import { uploadLog } from "@/lib/uploads/logger";
 
 export type UploadFolder = "products" | "companies";
 
+function assertLocalUploadAllowed(): void {
+  if (process.env.VERCEL === "1" || process.env.NODE_ENV === "production") {
+    throw new AppError(
+      "Local file uploads are disabled in production. Use UploadThing (UPLOADTHING_TOKEN).",
+      503,
+    );
+  }
+  if (!preferLocalFileUploads()) {
+    throw new AppError("Local uploads are only available on localhost during development.", 503);
+  }
+}
+
 export async function saveLocalImage(file: File, folder: UploadFolder): Promise<string> {
+  assertLocalUploadAllowed();
+
   if (!file.name || file.size === 0) {
     throw new AppError("Empty file", 400);
   }
@@ -27,17 +43,7 @@ export async function saveLocalImage(file: File, folder: UploadFolder): Promise<
   const bytes = await file.arrayBuffer();
   await writeFile(join(uploadDir, uniqueName), Buffer.from(bytes));
 
-  return `/uploads/${folder}/${uniqueName}`;
-}
-
-export async function saveLocalImages(files: File[], folder: UploadFolder): Promise<string[]> {
-  const urls: string[] = [];
-  for (const file of files) {
-    try {
-      urls.push(await saveLocalImage(file, folder));
-    } catch {
-      // skip invalid entries
-    }
-  }
-  return urls;
+  const url = `/uploads/${folder}/${uniqueName}`;
+  uploadLog("local", "info", "saved file", { folder, bytes: file.size });
+  return url;
 }

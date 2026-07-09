@@ -86,7 +86,6 @@ export function CompanyProfileForm({
             value={logoUrl}
             onChange={handleLogoChange}
             inputName="logo"
-            hint="JPG, PNG, or WebP up to 4 MB — saved to public/uploads/companies"
           />
 
           <div>

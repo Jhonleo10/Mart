@@ -1,3 +1,5 @@
+import { UPLOAD_MAX_BYTES } from "@/lib/uploads/constants";
+
 const ALLOWED_MIME_TYPES = new Set([
   "image/jpeg",
   "image/jpg",
@@ -7,13 +9,26 @@ const ALLOWED_MIME_TYPES = new Set([
 
 const ALLOWED_EXTENSIONS = new Set([".jpg", ".jpeg", ".png", ".webp"]);
 
-export const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+export { UPLOAD_MAX_BYTES as MAX_UPLOAD_BYTES };
+
+export function isUploadThingCdnHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  return (
+    host === "utfs.io" ||
+    host.endsWith(".utfs.io") ||
+    host === "ufs.sh" ||
+    host.endsWith(".ufs.sh") ||
+    host === "uploadthing.com" ||
+    host.endsWith(".uploadthing.com")
+  );
+}
 
 export function validateImageUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
+    if (isUploadThingCdnHost(parsed.hostname)) return true;
     const ext = parsed.pathname.slice(parsed.pathname.lastIndexOf(".")).toLowerCase();
-    return ALLOWED_EXTENSIONS.has(ext) || parsed.hostname.includes("utfs.io") || parsed.hostname.endsWith(".ufs.sh");
+    return ALLOWED_EXTENSIONS.has(ext);
   } catch {
     return false;
   }
@@ -32,8 +47,8 @@ export function validateUploadFile(file: { type: string; size: number; name: str
     return { valid: false, error: "Invalid file extension" };
   }
 
-  if (file.size > MAX_UPLOAD_BYTES) {
-    return { valid: false, error: "File exceeds 5 MB limit" };
+  if (file.size > UPLOAD_MAX_BYTES) {
+    return { valid: false, error: "File exceeds 4 MB limit" };
   }
 
   return { valid: true };

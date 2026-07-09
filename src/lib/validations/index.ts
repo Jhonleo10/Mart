@@ -1,6 +1,10 @@
 import { z } from "zod";
 import { FIELD_LIMITS } from "./fields";
 import {
+  isAllowedStoredImageUrl,
+  storedImageUrlMessage,
+} from "@/lib/uploads/url-validation";
+import {
   emailStartsWithLowercase,
   isValidEmailFormat,
   EMAIL_MUST_START_LOWERCASE,
@@ -181,14 +185,7 @@ export const companyProfileSchema = z.object({
     .string()
     .optional()
     .or(z.literal(""))
-    .refine(
-      (val) =>
-        !val ||
-        val.startsWith("http://") ||
-        val.startsWith("https://") ||
-        val.startsWith("/uploads/"),
-      "Invalid logo URL",
-    ),
+    .refine((val) => !val || isAllowedStoredImageUrl(val), "Invalid logo URL"),
 });
 
 function coerceStringArray(val: unknown): string[] {
@@ -200,14 +197,10 @@ function coerceStringArray(val: unknown): string[] {
 
 const productImageArray = z
   .array(
-    z.string().min(1).refine(
-      (url) =>
-        url.startsWith("http://") ||
-        url.startsWith("https://") ||
-        url.startsWith("data:image/") ||
-        url.startsWith("/uploads/"),
-      { message: "Each image must be a valid URL or uploaded image" },
-    ),
+    z
+      .string()
+      .min(1)
+      .refine(isAllowedStoredImageUrl, { message: storedImageUrlMessage() }),
   )
   .min(1, "At least one screenshot required");
 
@@ -258,14 +251,10 @@ export const productDraftSchema = z.object({
     .preprocess(
       coerceStringArray,
       z.array(
-        z.string().min(1).refine(
-          (url) =>
-            url.startsWith("http://") ||
-            url.startsWith("https://") ||
-            url.startsWith("data:image/") ||
-            url.startsWith("/uploads/"),
-          { message: "Each image must be a valid URL or uploaded image" },
-        ),
+        z
+          .string()
+          .min(1)
+          .refine(isAllowedStoredImageUrl, { message: storedImageUrlMessage() }),
       ),
     )
     .optional(),

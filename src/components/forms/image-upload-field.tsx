@@ -11,6 +11,9 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { UploadFolder } from "@/lib/uploads/local";
 import { preferLocalFileUploads } from "@/lib/uploads/strategy";
+import { UPLOAD_ACCEPT } from "@/lib/uploads/constants";
+import { mapUploadError } from "@/lib/uploads/errors";
+import { validateUploadFile } from "@/lib/security/upload";
 
 type UploadEndpoint = "companyLogo" | "productImages";
 
@@ -50,12 +53,7 @@ export function ImageUploadField({
       }
     },
     onUploadError: (err) => {
-      let message = err.message;
-      if (message.includes("Invalid token") || message.includes("Missing token")) {
-        message =
-          "UploadThing is not configured. In Vercel set UPLOADTHING_TOKEN to the V7 token only (no quotes), then redeploy.";
-      }
-      toast.error(`Upload failed: ${message}`);
+      toast.error(`Upload failed: ${mapUploadError(err)}`);
       setPreview(null);
     },
   });
@@ -80,7 +78,7 @@ export function ImageUploadField({
       setPreview(null);
       toast.success("Image uploaded");
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Upload failed");
+      toast.error(mapUploadError(err));
       setPreview(null);
     } finally {
       setLocalUploading(false);
@@ -88,10 +86,16 @@ export function ImageUploadField({
   }
 
   async function handleFile(file: File) {
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please choose an image file");
+    const check = validateUploadFile({
+      type: file.type,
+      size: file.size,
+      name: file.name,
+    });
+    if (!check.valid) {
+      toast.error(check.error ?? "Invalid file");
       return;
     }
+
     const reader = new FileReader();
     reader.onload = (e) => setPreview(e.target?.result as string);
     reader.readAsDataURL(file);
@@ -101,19 +105,19 @@ export function ImageUploadField({
       return;
     }
 
-    const results = await startUpload([file]);
-    const url = results?.[0]?.ufsUrl ?? results?.[0]?.url;
-    if (url) {
-      onChange(url);
-      setPreview(null);
-      toast.success("Image uploaded");
-    }
+    await startUpload([file]);
   }
+
+  const storageHint = hint ?? (
+    preferLocalFileUploads()
+      ? "JPG, PNG, or WebP up to 4 MB — saved to public/uploads"
+      : "JPG, PNG, or WebP up to 4 MB — uploaded to UploadThing cloud storage"
+  );
 
   return (
     <div className={cn("space-y-2", className)}>
       <Label className="text-sm font-medium text-slate-700">{label}</Label>
-      {hint && <p className="text-xs text-slate-500">{hint}</p>}
+      <p className="text-xs text-slate-500">{storageHint}</p>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
         <div
@@ -164,7 +168,7 @@ export function ImageUploadField({
           <input
             ref={fileRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,image/svg+xml"
+            accept={UPLOAD_ACCEPT}
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
@@ -188,7 +192,11 @@ export function ImageUploadField({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             type="text"
-            placeholder="Or paste image URL (https://... or /uploads/...)"
+            placeholder={
+              preferLocalFileUploads()
+                ? "Or paste image URL (https://... or /uploads/...)"
+                : "Or paste image URL (https://utfs.io/...)"
+            }
             className="h-9 text-sm"
           />
         </div>

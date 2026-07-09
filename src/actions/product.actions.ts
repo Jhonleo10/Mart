@@ -10,7 +10,6 @@ import { prisma } from "@/lib/prisma";
 import { createSlug } from "@/lib/slug";
 import { auditLog } from "@/lib/security/audit";
 import { sanitizeText } from "@/lib/security/sanitize";
-import { saveLocalImages } from "@/lib/uploads/local";
 import { getProductPublicPath } from "@/lib/product-public-url";
 import type { ActionResult } from "@/lib/action-types";
 
@@ -47,12 +46,6 @@ export async function createProduct(
     const features = formData.getAll("features").map(String).filter(Boolean);
     const tags = formData.getAll("tags").map(String).filter(Boolean);
     const images = formData.getAll("images").map(String).filter(Boolean);
-    const imageFiles = formData.getAll("imageFiles") as File[];
-    const uploadedImageUrls = await saveLocalImages(
-      imageFiles.filter((f) => f instanceof File && f.size > 0),
-      "products",
-    );
-    const allImages = [...images, ...uploadedImageUrls];
 
     const raw = {
       name: formData.get("name"),
@@ -66,7 +59,7 @@ export async function createProduct(
       demoUrl: formData.get("demoUrl") || "",
       supportEmail: formData.get("supportEmail") || "",
       tags,
-      images: allImages,
+      images,
     };
 
     const parsed = productSchema.safeParse(raw);
@@ -323,12 +316,6 @@ export async function updateProduct(
     const features = formData.getAll("features").map(String).filter(Boolean);
     const tags = formData.getAll("tags").map(String).filter(Boolean);
     const images = formData.getAll("images").map(String).filter(Boolean);
-    const imageFiles = formData.getAll("imageFiles") as File[];
-    const uploadedImageUrls = await saveLocalImages(
-      imageFiles.filter((f) => f instanceof File && f.size > 0),
-      "products",
-    );
-    const allImages = [...images, ...uploadedImageUrls];
 
     const raw = {
       name: formData.get("name"),
@@ -342,7 +329,7 @@ export async function updateProduct(
       demoUrl: formData.get("demoUrl") || "",
       supportEmail: formData.get("supportEmail") || "",
       tags,
-      images: allImages.length > 0 ? allImages : existing.images.map((i) => i.url),
+      images: images.length > 0 ? images : existing.images.map((i) => i.url),
     };
 
     const schema = options?.asDraft ? productDraftSchema : productSchema;
@@ -407,7 +394,7 @@ export async function updateProduct(
         },
       });
 
-      if (allImages.length > 0) {
+      if (images.length > 0) {
         await tx.productImage.deleteMany({ where: { productId } });
         await tx.productImage.createMany({
           data: normalized.images!.map((url, i) => ({

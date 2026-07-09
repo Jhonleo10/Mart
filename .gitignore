@@ -40,3 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 .cache/
 next-env.d.ts
+
+# local user uploads (dev only)
+/public/uploads/

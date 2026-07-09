@@ -9,6 +9,10 @@ import { cn } from "@/lib/utils";
 import { useUploadThing } from "@/lib/uploadthing";
 import type { UploadFolder } from "@/lib/uploads/local";
 import { preferLocalFileUploads } from "@/lib/uploads/strategy";
+import { UPLOAD_ACCEPT, UPLOAD_MAX_FILE_COUNT } from "@/lib/uploads/constants";
+import { mapUploadError } from "@/lib/uploads/errors";
+import { isValidImageRef } from "@/lib/uploads/url-validation";
+import { validateUploadFile } from "@/lib/security/upload";
 
 export interface ShowcaseSlot {
   id: string;
@@ -16,20 +20,12 @@ export interface ShowcaseSlot {
   uploading?: boolean;
 }
 
-const MAX_SLOTS = 10;
+const MAX_SLOTS = UPLOAD_MAX_FILE_COUNT;
 
 let slotCounter = 0;
 function newSlot(url = ""): ShowcaseSlot {
   slotCounter += 1;
   return { id: `showcase-${slotCounter}`, url };
-}
-
-function isValidImageRef(url: string) {
-  return (
-    url.startsWith("http://") ||
-    url.startsWith("https://") ||
-    url.startsWith("/uploads/")
-  );
 }
 
 interface VisualShowcaseFieldProps {
@@ -54,12 +50,7 @@ export function VisualShowcaseField({
 
   const { startUpload } = useUploadThing("productImages", {
     onUploadError: (err) => {
-      let message = err.message;
-      if (message.includes("Invalid token") || message.includes("Missing token")) {
-        message =
-          "UploadThing is not configured. In Vercel set UPLOADTHING_TOKEN to the V7 token only (no quotes), then redeploy.";
-      }
-      toast.error(`Upload failed: ${message}`);
+      toast.error(`Upload failed: ${mapUploadError(err)}`);
     },
   });
 
@@ -88,8 +79,13 @@ export function VisualShowcaseField({
 
   const uploadFile = useCallback(
     async (id: string, file: File) => {
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please upload an image file");
+      const check = validateUploadFile({
+        type: file.type,
+        size: file.size,
+        name: file.name,
+      });
+      if (!check.valid) {
+        toast.error(check.error ?? "Invalid file");
         return;
       }
 
@@ -130,7 +126,7 @@ export function VisualShowcaseField({
         patchSlots((current) =>
           current.map((s) => (s.id === id ? { ...s, uploading: false } : s)),
         );
-        toast.error(err instanceof Error ? err.message : "Upload failed");
+        toast.error(mapUploadError(err));
       }
     },
     [patchSlots, startUpload, uploadFolder],
@@ -153,7 +149,7 @@ export function VisualShowcaseField({
             <p className="mt-1.5 text-sm font-medium text-slate-500">
               {preferLocalFileUploads()
                 ? "Upload screenshots — stored in public/uploads (local dev)"
-                : "Upload product screenshots — stored in cloud (UploadThing)"}
+                : "Upload product screenshots — stored securely via UploadThing"}
             </p>
           </div>
         </div>
@@ -216,7 +212,7 @@ export function VisualShowcaseField({
               >
                 <input
                   type="file"
-                  accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                  accept={UPLOAD_ACCEPT}
                   className="hidden"
                   ref={(el) => {
                     fileInputRefs.current[item.id] = el;
@@ -268,7 +264,7 @@ export function VisualShowcaseField({
                         </div>
                         <p className="mt-4 text-sm font-bold text-slate-700">Upload image</p>
                         <p className="mt-1 text-xs font-medium text-slate-400">
-                          Drop or click — JPG, PNG, WebP
+                          Drop or click — JPG, PNG, WebP (max 4 MB)
                         </p>
                       </>
                     )}

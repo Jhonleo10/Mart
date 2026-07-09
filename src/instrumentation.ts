@@ -5,6 +5,9 @@ export async function register() {
   const { configureAuthUrlForRuntime } = await import("@/lib/app-url");
   configureAuthUrlForRuntime();
 
+  const { syncUploadthingEnv } = await import("@/lib/uploadthing-env");
+  syncUploadthingEnv();
+
   if (process.env.NODE_ENV === "production" || process.env.VALIDATE_ENV === "true") {
     const { validateEnv } = await import("@/lib/security/env");
     validateEnv();
@@ -26,14 +29,8 @@ export async function register() {
     const { isUploadthingConfigured } = await import("@/lib/uploadthing-env");
     if (!isUploadthingConfigured()) {
       console.warn(
-        "[uploadthing] UPLOADTHING_TOKEN is not set — image uploads will fail. See .env.example",
+        "[uploadthing] UPLOADTHING_TOKEN not set — local dev will use public/uploads on localhost.",
       );
     }
-  }
-
-  const { getUploadthingToken } = await import("@/lib/uploadthing-env");
-  const uploadthingToken = getUploadthingToken();
-  if (uploadthingToken) {
-    process.env.UPLOADTHING_TOKEN = uploadthingToken;
   }
 }

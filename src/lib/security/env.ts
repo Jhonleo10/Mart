@@ -1,5 +1,7 @@
 import { z } from "zod";
-import { isUploadthingConfigured } from "@/lib/uploadthing-env";
+import {
+  isUploadthingConfigured,
+} from "@/lib/uploadthing-env";
 
 const serverSchema = z.object({
   DATABASE_URL: z.string().min(1),
@@ -78,8 +80,8 @@ export function validateEnv() {
 
   if (process.env.NODE_ENV === "production" && process.env.VERCEL === "1") {
     if (!isUploadthingConfigured()) {
-      console.warn(
-        "[validateEnv] UPLOADTHING_TOKEN is not set — product/company image uploads will fail on Vercel.",
+      throw new Error(
+        "Environment validation failed:\nUPLOADTHING_TOKEN is required on Vercel. Add the UploadThing v7 token (no quotes) and redeploy.",
       );
     }
   }

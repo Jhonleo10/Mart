@@ -1,9 +1,10 @@
 /**
- * Local `public/uploads` writes only work in local dev.
- * On Vercel (and any non-localhost host) use UploadThing / cloud URLs.
+ * Local `public/uploads` only on localhost dev.
+ * Production / Vercel always uses UploadThing.
  */
 export function preferLocalFileUploads(): boolean {
   if (process.env.VERCEL === "1") return false;
+  if (process.env.NODE_ENV === "production") return false;
 
   if (typeof window !== "undefined") {
     const host = window.location.hostname;
@@ -11,4 +12,8 @@ export function preferLocalFileUploads(): boolean {
   }
 
   return process.env.NODE_ENV === "development";
+}
+
+export function usesCloudUploads(): boolean {
+  return !preferLocalFileUploads();
 }
