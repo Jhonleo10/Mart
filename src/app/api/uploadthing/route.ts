@@ -2,15 +2,11 @@ import { createRouteHandler } from "uploadthing/next";
 import { ourFileRouter } from "./core";
 import { getUploadthingToken } from "@/lib/uploadthing-env";
 
-const token = getUploadthingToken();
-
-if (!token && process.env.NODE_ENV === "development") {
-  console.warn(
-    "[uploadthing] Missing UPLOADTHING_TOKEN — company/product image uploads will fail until configured.",
-  );
-}
+// Let UploadThing read UPLOADTHING_TOKEN from env at request time.
+// Do not pass `token: undefined` from module scope — that blocks env fallback.
+const uploadthingToken = getUploadthingToken();
 
 export const { GET, POST } = createRouteHandler({
   router: ourFileRouter,
-  config: { token },
+  ...(uploadthingToken ? { config: { token: uploadthingToken } } : {}),
 });

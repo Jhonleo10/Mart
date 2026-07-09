@@ -21,7 +21,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https: http:",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.razorpay.com https://*.upstash.io https://*.ufs.sh https://utfs.io wss:",
+      "connect-src 'self' https://*.razorpay.com https://*.upstash.io https://*.ufs.sh https://utfs.io https://api.uploadthing.com https://*.uploadthing.com https://ingest.uploadthing.com wss:",
       "frame-src https://api.razorpay.com https://checkout.razorpay.com",
       "object-src 'none'",
       "base-uri 'self'",

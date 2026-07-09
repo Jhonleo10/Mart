@@ -30,4 +30,10 @@ export async function register() {
       );
     }
   }
+
+  const { getUploadthingToken } = await import("@/lib/uploadthing-env");
+  const uploadthingToken = getUploadthingToken();
+  if (uploadthingToken) {
+    process.env.UPLOADTHING_TOKEN = uploadthingToken;
+  }
 }

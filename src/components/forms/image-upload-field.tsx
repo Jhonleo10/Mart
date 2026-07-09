@@ -50,9 +50,11 @@ export function ImageUploadField({
       }
     },
     onUploadError: (err) => {
-      const message = err.message.includes("Invalid token")
-        ? "Upload not configured. Add UPLOADTHING_TOKEN to .env (UploadThing dashboard → API Keys → V7)."
-        : err.message;
+      let message = err.message;
+      if (message.includes("Invalid token") || message.includes("Missing token")) {
+        message =
+          "UploadThing is not configured. In Vercel set UPLOADTHING_TOKEN to the V7 token only (no quotes), then redeploy.";
+      }
       toast.error(`Upload failed: ${message}`);
       setPreview(null);
     },
