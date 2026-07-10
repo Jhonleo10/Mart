@@ -109,7 +109,7 @@ export default async function CompanyLeadsPage({ searchParams }: PageProps) {
                 </div>
                 <StatusBadge status={lead.status} />
               </div>
-              {(lead.status === "NEW" || lead.status === "QUALIFIED") && !hasScheduledMeeting ? (
+              {["NEW", "CONTACTED", "QUALIFIED"].includes(lead.status) || hasScheduledMeeting ? (
                 <LeadStatusButtons
                   bookingId={lead.id}
                   bookingStatus={lead.status}

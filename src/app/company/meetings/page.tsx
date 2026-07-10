@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Suspense } from "react";
 import { auth } from "@/lib/auth";
 import { AUTH_PATHS } from "@/lib/auth-paths";
 import { companyRepository } from "@/repositories/company.repository";
@@ -7,7 +8,8 @@ import { meetingRepository, companyGoogleRepository } from "@/repositories/meeti
 import { isGoogleOAuthConfigured } from "@/lib/google/oauth";
 import { MeetingCard } from "@/components/meeting/meeting-card";
 import { GoogleCalendarConnect } from "@/components/meeting/google-calendar-connect";
-import { DashboardPageHeader, DashboardStatCard } from "@/components/dashboard/dashboard-stat-card";
+import { GoogleConnectToast } from "@/components/meeting/google-connect-toast";
+import { DashboardPageHeader } from "@/components/dashboard/dashboard-stat-card";
 import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
 import { DashboardPagination, DASHBOARD_PAGE_SIZE } from "@/components/dashboard/dashboard-pagination";
 
@@ -45,6 +47,9 @@ export default async function CompanyMeetingsPage({ searchParams }: PageProps) {
 
   return (
     <div className="dash-page-enter animate-in fade-in">
+      <Suspense fallback={null}>
+        <GoogleConnectToast />
+      </Suspense>
       <DashboardPageHeader
         title="Meetings"
         description="Manage scheduled demos, meeting links, and your calendar connection"

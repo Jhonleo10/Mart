@@ -9,7 +9,10 @@ import { LEAD_KANBAN_COLUMNS, leadMatchesStage } from "@/lib/lead-stages";
 import type { LeadRow } from "./leads-workspace";
 
 function showLeadActions(status: BookingStatus, hasScheduledMeeting: boolean) {
-  return (status === "NEW" || status === "QUALIFIED") && !hasScheduledMeeting;
+  // Keep actions visible for CONTACTED leads without a scheduled meeting,
+  // and for leads that already have a meeting (link to Meetings).
+  if (hasScheduledMeeting) return true;
+  return ["NEW", "CONTACTED", "QUALIFIED"].includes(status);
 }
 
 export function LeadKanban({

@@ -89,8 +89,8 @@ export async function updateMeetCalendarEvent(
   input: Omit<CreateMeetEventInput, "calendarId">,
 ): Promise<MeetEventResult> {
   const calendar = getCalendarApi(auth);
-  const requestId = randomUUID();
 
+  // Patch times/details only — do not recreate conference data (avoids changing Meet links).
   const response = await calendar.events.patch({
     calendarId,
     eventId,
@@ -102,12 +102,6 @@ export async function updateMeetCalendarEvent(
       start: { dateTime: input.start.toISOString(), timeZone: input.timezone },
       end: { dateTime: input.end.toISOString(), timeZone: input.timezone },
       attendees: input.attendeeEmails.map((email) => ({ email })),
-      conferenceData: {
-        createRequest: {
-          requestId,
-          conferenceSolutionKey: { type: "hangoutsMeet" },
-        },
-      },
     },
   });
 
@@ -125,7 +119,7 @@ export async function updateMeetCalendarEvent(
     eventId: response.data.id,
     meetLink,
     htmlLink: response.data.htmlLink ?? "",
-    icsUid: response.data.iCalUID ?? requestId,
+    icsUid: response.data.iCalUID ?? eventId,
   };
 }
 

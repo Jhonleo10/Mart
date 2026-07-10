@@ -34,14 +34,20 @@ export function GoogleCalendarConnect({
     if (!ok) return;
 
     setLoading(true);
-    const result = await disconnectGoogleCalendarAction();
-    setLoading(false);
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
+    try {
+      const result = await disconnectGoogleCalendarAction();
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Google Calendar disconnected");
+      router.refresh();
+    } catch (error) {
+      console.error("[google-disconnect]", error);
+      toast.error("Could not disconnect Google Calendar. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    toast.success("Google Calendar disconnected");
-    router.refresh();
   }
 
   if (!configured) {

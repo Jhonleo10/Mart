@@ -22,7 +22,6 @@ export const config = {
     "/api/admin/:path*",
     "/api/meetings/:path*",
     "/api/intelligence/:path*",
-    "/api/google/:path*",
     "/api/upload",
     "/api/uploadthing/:path*",
     "/api/analytics/:path*",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import type { MeetingProvider } from "@prisma/client";
@@ -41,8 +41,11 @@ export function ScheduleMeetingDialog({
   const { confirm, confirmDialog } = useConfirmDialog();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [provider, setProvider] = useState<MeetingProvider>("GOOGLE");
+  const [provider, setProvider] = useState<MeetingProvider>(
+    googleConnected ? "GOOGLE" : "CUSTOM",
+  );
   const [meetingUrl, setMeetingUrl] = useState("");
+  const submittingRef = useRef(false);
   const today = new Date().toISOString().slice(0, 10);
 
   const buyerDefaults = useMemo(
@@ -72,7 +75,7 @@ export function ScheduleMeetingDialog({
     if (provider === "GOOGLE") {
       return googleConnected
         ? "A Google Calendar event and Meet link will be created automatically on the vendor's connected account."
-        : "Connect Google Calendar in Meetings settings to use automatic Google Meet scheduling.";
+        : "Connect Google Calendar in Company → Settings (or Meetings) to use automatic Google Meet scheduling.";
     }
     if (provider === "TEAMS") return "Paste the Microsoft Teams meeting link from your Teams calendar.";
     if (provider === "ZOOM") return "Paste the Zoom meeting join URL from your Zoom account.";
@@ -82,6 +85,13 @@ export function ScheduleMeetingDialog({
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     const form = getValidatedForm(e);
     if (!form) return;
+
+    if (submittingRef.current || loading) return;
+
+    if (provider === "GOOGLE" && !googleConnected) {
+      toast.error("Connect Google Calendar first, or choose Teams / Zoom / Custom URL.");
+      return;
+    }
 
     const ok = await confirm({
       title: "Schedule this meeting?",
@@ -93,25 +103,33 @@ export function ScheduleMeetingDialog({
     });
     if (!ok) return;
 
+    submittingRef.current = true;
     setLoading(true);
-    const formData = new FormData(form);
-    formData.set("bookingId", bookingId);
-    formData.set("provider", provider);
-    if (needsManualUrl) {
-      formData.set("meetingUrl", meetingUrl);
-    }
-    const result = await scheduleMeetingAction(formData);
-    setLoading(false);
+    try {
+      const formData = new FormData(form);
+      formData.set("bookingId", bookingId);
+      formData.set("provider", provider);
+      if (needsManualUrl) {
+        formData.set("meetingUrl", meetingUrl);
+      }
+      const result = await scheduleMeetingAction(formData);
 
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
-    }
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
 
-    toast.success("Meeting scheduled successfully");
-    setOpen(false);
-    setMeetingUrl("");
-    router.refresh();
+      toast.success("Meeting scheduled successfully");
+      setOpen(false);
+      setMeetingUrl("");
+      router.refresh();
+    } catch (error) {
+      console.error("[schedule-meeting]", error);
+      toast.error("Could not schedule the meeting. Please try again.");
+    } finally {
+      submittingRef.current = false;
+      setLoading(false);
+    }
   }
 
   if (!open) {
@@ -140,6 +158,15 @@ export function ScheduleMeetingDialog({
           scheduling.
         </p>
       ) : null}
+      {!googleConnected ? (
+        <p className="mb-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+          Google Calendar is not connected. Use Teams, Zoom, or a custom URL — or{" "}
+          <a href="/company/settings" className="font-semibold underline">
+            connect Google
+          </a>{" "}
+          for automatic Meet links.
+        </p>
+      ) : null}
       <form onSubmit={handleSubmit} className="grid gap-3 sm:grid-cols-2">
         <div className="sm:col-span-2">
           <Label htmlFor={`provider-${bookingId}`}>Meeting provider</Label>
@@ -154,8 +181,9 @@ export function ScheduleMeetingDialog({
             className="mt-1 flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 text-sm"
           >
             {MEETING_PROVIDER_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
+              <option key={opt.value} value={opt.value} disabled={opt.value === "GOOGLE" && !googleConnected}>
                 {opt.label}
+                {opt.value === "GOOGLE" && !googleConnected ? " (connect calendar first)" : ""}
               </option>
             ))}
           </select>
@@ -258,6 +286,7 @@ export function ScheduleMeetingDialog({
             type="button"
             size="sm"
             variant="outline"
+            disabled={loading}
             onClick={() => {
               setOpen(false);
               setMeetingUrl("");

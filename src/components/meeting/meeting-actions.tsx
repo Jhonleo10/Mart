@@ -60,15 +60,21 @@ export function MeetingActions({
     if (!ok) return;
 
     setLoading(true);
-    const result = await cancelMeetingAction(meetingId, reason);
-    setLoading(false);
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
+    try {
+      const result = await cancelMeetingAction(meetingId, reason);
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Meeting cancelled");
+      setMode("none");
+      router.refresh();
+    } catch (error) {
+      console.error("[cancel-meeting]", error);
+      toast.error("Could not cancel the meeting. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    toast.success("Meeting cancelled");
-    setMode("none");
-    router.refresh();
   }
 
   async function handleComplete() {
@@ -86,14 +92,20 @@ export function MeetingActions({
     if (!ok) return;
 
     setLoading(true);
-    const result = await completeMeetingAction(meetingId);
-    setLoading(false);
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
+    try {
+      const result = await completeMeetingAction(meetingId);
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Meeting marked complete");
+      router.refresh();
+    } catch (error) {
+      console.error("[complete-meeting]", error);
+      toast.error("Could not complete the meeting. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    toast.success("Meeting marked complete");
-    router.refresh();
   }
 
   async function handleReschedule(e: React.FormEvent<HTMLFormElement>) {
@@ -109,16 +121,22 @@ export function MeetingActions({
     if (!ok) return;
 
     setLoading(true);
-    const formData = new FormData(form);
-    const result = await rescheduleMeetingAction(meetingId, formData);
-    setLoading(false);
-    if ("error" in result) {
-      toast.error(result.error);
-      return;
+    try {
+      const formData = new FormData(form);
+      const result = await rescheduleMeetingAction(meetingId, formData);
+      if ("error" in result) {
+        toast.error(result.error);
+        return;
+      }
+      toast.success("Meeting rescheduled");
+      setMode("none");
+      router.refresh();
+    } catch (error) {
+      console.error("[reschedule-meeting]", error);
+      toast.error("Could not reschedule the meeting. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    toast.success("Meeting rescheduled");
-    setMode("none");
-    router.refresh();
   }
 
   if (status !== "SCHEDULED") return null;

@@ -83,6 +83,25 @@ export const meetingService = {
       throw new AppError("A meeting is already scheduled for this demo request", 409);
     }
 
+    // Claim the booking row early so concurrent schedule attempts fail cleanly.
+    const claim = await prisma.booking.updateMany({
+      where: {
+        id: input.bookingId,
+        companyId: input.companyId,
+        status: { in: ["NEW", "CONTACTED", "QUALIFIED"] },
+      },
+      data: { updatedAt: new Date() },
+    });
+    if (claim.count === 0) {
+      throw new AppError("This demo request cannot be scheduled", 400);
+    }
+
+    // Re-check after claim to reduce duplicate Google events under concurrent clicks.
+    const existingAfterClaim = await meetingRepository.findByBookingId(input.bookingId);
+    if (existingAfterClaim?.status === "SCHEDULED") {
+      throw new AppError("A meeting is already scheduled for this demo request", 409);
+    }
+
     if (input.scheduledAt.getTime() <= Date.now()) {
       throw new AppError("Meeting time must be in the future", 400);
     }
@@ -265,6 +284,14 @@ export const meetingService = {
           booking: { include: { product: true, company: true, user: true } },
         },
       });
+
+      // Return lead to an actionable pipeline stage so Schedule Meeting can be used again.
+      if (["CONTACTED", "QUALIFIED"].includes(result.booking.status)) {
+        await tx.booking.update({
+          where: { id: result.bookingId },
+          data: { meetingLink: null },
+        });
+      }
 
       await tx.meetingHistory.create({
         data: {

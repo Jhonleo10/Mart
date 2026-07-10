@@ -171,6 +171,7 @@ export async function cancelMeetingAction(
     }
 
     revalidatePath("/company/meetings");
+    revalidatePath("/company/leads");
     revalidatePath("/user/meetings");
     revalidatePath("/admin/meetings");
 
