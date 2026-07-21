@@ -14,6 +14,16 @@ function buildMeetingEnd(start: Date, durationMinutes: number) {
   return new Date(start.getTime() + durationMinutes * 60 * 1000);
 }
 
+function formatTimeRange(start: Date, durationMinutes: number): string {
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  const startH = start.getUTCHours();
+  const startM = start.getUTCMinutes();
+  const end = buildMeetingEnd(start, durationMinutes);
+  const endH = end.getUTCHours();
+  const endM = end.getUTCMinutes();
+  return `${pad(startH)}:${pad(startM)}-${pad(endH)}:${pad(endM)}`;
+}
+
 function formatMeetingContext(booking: {
   name: string;
   email: string;
@@ -182,7 +192,12 @@ export const meetingService = {
 
       await tx.booking.update({
         where: { id: input.bookingId },
-        data: { status: "CONTACTED", meetingLink: scheduleLink.meetingLink },
+        data: {
+          status: "CONTACTED",
+          meetingLink: scheduleLink.meetingLink,
+          preferredDate: input.scheduledAt,
+          preferredTime: formatTimeRange(input.scheduledAt, input.durationMinutes),
+        },
       });
 
       await tx.meetingHistory.create({
@@ -398,7 +413,11 @@ export const meetingService = {
 
       await tx.booking.update({
         where: { id: booking.id },
-        data: { meetingLink: resolved.meetingLink },
+        data: {
+          meetingLink: resolved.meetingLink,
+          preferredDate: input.scheduledAt,
+          preferredTime: formatTimeRange(input.scheduledAt, input.durationMinutes),
+        },
       });
 
       await tx.meetingHistory.create({
@@ -440,13 +459,16 @@ export const meetingService = {
 
   async completeMeeting(input: {
     meetingId: string;
-    companyId: string;
+    companyId?: string;
+    userId?: string;
     actorId: string;
     notes?: string;
   }) {
     const meeting = await meetingRepository.findById(input.meetingId);
     if (!meeting) throw new AppError("Meeting not found", 404);
-    if (meeting.companyId !== input.companyId) throw new AppError("Forbidden", 403);
+    if (input.companyId && meeting.companyId !== input.companyId) throw new AppError("Forbidden", 403);
+    if (input.userId && meeting.booking.userId !== input.userId) throw new AppError("Forbidden", 403);
+    if (!input.companyId && !input.userId) throw new AppError("Forbidden", 403);
     if (meeting.status !== "SCHEDULED") {
       throw new AppError("Only scheduled meetings can be completed", 400);
     }

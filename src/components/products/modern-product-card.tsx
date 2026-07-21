@@ -23,6 +23,7 @@ export interface ModernProductCardData {
   matchScore?: number;
   matchLabel?: string;
   featureTags?: string[];
+  adminVerified?: boolean;
 }
 
 export function ModernProductCard({
@@ -76,7 +77,7 @@ export function ModernProductCard({
           </span>
         )}
 
-        {product.company.status === "APPROVED" && (
+        {product.adminVerified && (
           <span className="absolute right-3 top-3 z-[2] inline-flex items-center gap-1 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-semibold text-brand-green-dark shadow-sm backdrop-blur-sm">
             <Shield className="h-3 w-3" />
             Verified

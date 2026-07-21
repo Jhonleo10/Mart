@@ -27,12 +27,12 @@ export function AdminTableShell({
         <div className="admin-table-shell-header">
           <div className="min-w-0">
             {title && <h2 className="admin-table-shell-title">{title}</h2>}
-            {description && <p className="admin-table-shell-desc">{description}</p>}
+            {description && <p className="admin-table-shell-desc hidden sm:block">{description}</p>}
           </div>
           {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
-      <div className="admin-table-shell-scroll">
+      <div className="admin-table-shell-scroll overflow-x-auto">
         {isEmpty && empty ? empty : children}
       </div>
       {footer && !isEmpty && <div className="admin-table-shell-footer">{footer}</div>}

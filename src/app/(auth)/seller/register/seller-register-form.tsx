@@ -25,7 +25,7 @@ import type { PricingPlan } from "@/lib/settings/defaults";
 import { getSellerCheckoutPlans } from "@/lib/settings/pricing";
 import { prepareCompanyRegistrationOrder } from "@/actions/payment.actions";
 import { completeCompanyRegistration } from "@/actions/auth.actions";
-import { FIELD_LIMITS, PASSWORD_HINT, EMAIL_HINT, PHONE_HINT } from "@/lib/validations/client";
+import { FIELD_LIMITS, PASSWORD_HINT, PHONE_HINT } from "@/lib/validations/client";
 import { companyRegisterSchema, companyRegisterStep1Schema } from "@/lib/validations";
 import { RegistrationSuccessDialog } from "@/components/auth/registration-success-dialog";
 import { AuthPageShell } from "@/components/auth/auth-page-shell";
@@ -263,7 +263,6 @@ export default function SellerRegisterForm({
                 label="Email"
                 htmlFor="email"
                 error={fieldError("email")}
-                hint={EMAIL_HINT}
               >
                 <div className="auth-input-wrap">
                   <Mail className="auth-input-icon" />

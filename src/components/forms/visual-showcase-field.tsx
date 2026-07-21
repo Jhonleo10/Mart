@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { ImagePlus, Loader2, Plus, Trash2, Upload, X } from "lucide-react";
+import { ImagePlus, Loader2, Plus, Trash2, Upload, X, AlertCircle, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,6 @@ import { preferLocalFileUploads } from "@/lib/uploads/strategy";
 import { UPLOAD_ACCEPT, UPLOAD_MAX_FILE_COUNT } from "@/lib/uploads/constants";
 import { mapUploadError } from "@/lib/uploads/errors";
 import { extractUploadUrl } from "@/lib/uploads/extract-url";
-import { isValidImageRef } from "@/lib/uploads/url-validation";
 import { validateUploadFile } from "@/lib/security/upload";
 
 export interface ShowcaseSlot {
@@ -27,6 +26,165 @@ let slotCounter = 0;
 function newSlot(url = ""): ShowcaseSlot {
   slotCounter += 1;
   return { id: `showcase-${slotCounter}`, url };
+}
+
+/**
+ * Resolve an image URL to its direct source.
+ * Handles Google Images (imgres), Bing, Pinterest, and other redirect-based URLs
+ * by extracting the actual image URL from query parameters.
+ */
+export function resolveImageUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+
+  if (trimmed.startsWith("data:")) return trimmed;
+  if (trimmed.startsWith("/uploads/")) return trimmed;
+
+  if (!trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+    return "";
+  }
+
+  try {
+    const parsed = new URL(trimmed);
+    const host = parsed.hostname.toLowerCase();
+
+    // Google Images: /imgres?imgurl=...
+    if (host.includes("google.") && parsed.pathname.startsWith("/imgres")) {
+      const imgurl = parsed.searchParams.get("imgurl");
+      if (imgurl) {
+        try { return decodeURIComponent(imgurl); } catch { return imgurl; }
+      }
+    }
+
+    // Fallback: any google domain with imgurl param
+    if (host.includes("google.") && parsed.searchParams.has("imgurl")) {
+      const imgurl = parsed.searchParams.get("imgurl");
+      if (imgurl) {
+        try { return decodeURIComponent(imgurl); } catch { return imgurl; }
+      }
+    }
+
+    // Pinterest
+    if (host.includes("pinterest.") || host === "pin.it") {
+      const imgurl = parsed.searchParams.get("url") ?? parsed.searchParams.get("img_url");
+      if (imgurl) {
+        try { return decodeURIComponent(imgurl); } catch { return imgurl; }
+      }
+    }
+
+    // Bing
+    if (host === "www.bing.com" || host === "bing.com") {
+      const imgurl = parsed.searchParams.get("mediaurl") ?? parsed.searchParams.get("u");
+      if (imgurl) {
+        try { return decodeURIComponent(imgurl); } catch { return imgurl; }
+      }
+    }
+  } catch {
+    return trimmed;
+  }
+
+  return trimmed;
+}
+
+interface UrlValidationState {
+  status: "idle" | "loading" | "valid" | "invalid";
+  message?: string;
+}
+
+function useUrlImagePreview(rawUrl: string) {
+  const [previewState, setPreviewState] = useState<UrlValidationState>({ status: "idle" });
+  const resolvedUrl = useMemo(() => resolveImageUrl(rawUrl), [rawUrl]);
+
+  useEffect(() => {
+    if (!rawUrl || !resolvedUrl) {
+      setPreviewState({ status: "idle" });
+      return;
+    }
+
+    setPreviewState({ status: "loading" });
+
+    const img = new window.Image();
+    const timeout = setTimeout(() => {
+      setPreviewState({ status: "invalid", message: "Image took too long to load" });
+    }, 10000);
+
+    img.onload = () => {
+      clearTimeout(timeout);
+      setPreviewState({ status: "valid" });
+    };
+    img.onerror = () => {
+      clearTimeout(timeout);
+      setPreviewState({ status: "invalid", message: "Could not load image from this URL" });
+    };
+    img.src = resolvedUrl;
+
+    return () => { clearTimeout(timeout); };
+  }, [rawUrl, resolvedUrl]);
+
+  return { previewState, resolvedUrl };
+}
+
+function UrlImagePreview({ url }: { url: string }) {
+  const { previewState, resolvedUrl } = useUrlImagePreview(url);
+  const isResolved = resolvedUrl !== url;
+
+  if (!url || previewState.status === "idle") return null;
+
+  return (
+    <div className="mt-2 flex items-center gap-2">
+      {previewState.status === "loading" && (
+        <>
+          <Loader2 className="h-3.5 w-3.5 animate-spin text-brand-blue" />
+          <span className="text-xs text-slate-500">Loading preview...</span>
+        </>
+      )}
+      {previewState.status === "valid" && (
+        <>
+          <Check className="h-3.5 w-3.5 text-green-500" />
+          <span className="text-xs text-green-600">Image loaded</span>
+          {isResolved && (
+            <span className="text-[10px] text-slate-400">(resolved from redirect)</span>
+          )}
+        </>
+      )}
+      {previewState.status === "invalid" && (
+        <>
+          <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
+          <span className="text-xs text-amber-600">{previewState.message}</span>
+        </>
+      )}
+    </div>
+  );
+}
+
+function SlotImagePreview({ item, index }: { item: ShowcaseSlot; index: number }) {
+  const [imgError, setImgError] = useState(false);
+  const resolvedSrc = useMemo(() => resolveImageUrl(item.url), [item.url]);
+
+  if (!item.url) return null;
+
+  if (imgError || !resolvedSrc) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center bg-slate-50 px-4">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50 ring-1 ring-amber-200">
+          <AlertCircle className="h-6 w-6 text-amber-500" />
+        </div>
+        <p className="mt-3 text-sm font-semibold text-slate-700">Could not load image</p>
+        <p className="mt-1 max-w-[14rem] text-center text-xs text-slate-400">
+          The URL did not return a valid image. Try a direct link to a JPG, PNG, or WebP file.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={resolvedSrc}
+      alt={`Screenshot ${index + 1}`}
+      className="h-full w-full object-cover"
+      onError={() => setImgError(true)}
+    />
+  );
 }
 
 interface VisualShowcaseFieldProps {
@@ -175,17 +333,6 @@ export function VisualShowcaseField({
             </p>
           </div>
         </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={addSlot}
-          disabled={slots.length >= MAX_SLOTS}
-          className="h-10 rounded-xl border-indigo-200 bg-white text-indigo-600 hover:bg-indigo-50"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Add screenshot
-        </Button>
       </div>
 
       <div className="grid gap-6 p-6 sm:grid-cols-2 sm:p-8">
@@ -236,9 +383,7 @@ export function VisualShowcaseField({
                   type="file"
                   accept={UPLOAD_ACCEPT}
                   className="hidden"
-                  ref={(el) => {
-                    fileInputRefs.current[item.id] = el;
-                  }}
+                  ref={(el) => { fileInputRefs.current[item.id] = el; }}
                   onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) void uploadFile(item.id, file);
@@ -248,11 +393,7 @@ export function VisualShowcaseField({
 
                 {hasPreview ? (
                   <>
-                    <img
-                      src={item.url}
-                      alt={`Screenshot ${index + 1}`}
-                      className="h-full w-full object-cover"
-                    />
+                    <SlotImagePreview item={item} index={index} />
                     {item.uploading ? (
                       <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
                         <Loader2 className="h-8 w-8 animate-spin text-white" />
@@ -304,11 +445,27 @@ export function VisualShowcaseField({
                   )
                 }
                 className="h-10 rounded-xl border-slate-200 bg-slate-50/50 text-xs focus:bg-white"
-                placeholder="Or paste image URL (https://...)"
+                placeholder="Paste image URL (JPG, PNG, WebP, AVIF, GIF, SVG)"
               />
+              {item.url && <UrlImagePreview url={item.url} />}
             </div>
           );
         })}
+
+        {slots.length < MAX_SLOTS && (
+          <div className="flex items-center justify-center">
+            <button
+              type="button"
+              onClick={addSlot}
+              className="flex h-full min-h-[12rem] w-full flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50/50 text-slate-400 transition-all hover:border-indigo-300 hover:bg-indigo-50/30 hover:text-indigo-500"
+            >
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+                <Plus className="h-6 w-6" />
+              </div>
+              <span className="text-sm font-semibold">Add Screenshot</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -329,9 +486,9 @@ export function createDefaultShowcaseSlots(
 }
 
 export function showcaseUrls(slots: ShowcaseSlot[]): string[] {
-  return slots.map((s) => s.url.trim()).filter(isValidImageRef);
+  return slots.map((s) => resolveImageUrl(s.url.trim())).filter(Boolean);
 }
 
 export function hasShowcaseImage(slots: ShowcaseSlot[]): boolean {
-  return slots.some((s) => isValidImageRef(s.url.trim()));
+  return slots.some((s) => Boolean(resolveImageUrl(s.url.trim())));
 }

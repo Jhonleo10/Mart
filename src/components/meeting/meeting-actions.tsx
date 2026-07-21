@@ -150,6 +150,9 @@ export function MeetingActions({
             <Button size="sm" variant="outline" onClick={() => setMode("reschedule")}>
               Reschedule
             </Button>
+          </>
+        ) : (
+          <>
             <Button
               size="sm"
               variant="outline"
@@ -163,11 +166,10 @@ export function MeetingActions({
             >
               Complete
             </Button>
+            <Button size="sm" variant="outline" onClick={() => setMode("cancel")}>
+              Request cancel
+            </Button>
           </>
-        ) : (
-          <Button size="sm" variant="outline" onClick={() => setMode("cancel")}>
-            Request cancel
-          </Button>
         )}
         {role === "COMPANY" ? (
           <Button size="sm" variant="ghost" className="text-red-600" onClick={() => setMode("cancel")}>

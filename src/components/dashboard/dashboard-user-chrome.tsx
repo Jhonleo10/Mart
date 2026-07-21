@@ -88,51 +88,74 @@ export function DashboardNotifications({
             {items.length === 0 ? (
               <p className="px-4 py-8 text-center text-sm text-slate-500">No notifications yet</p>
             ) : (
-              items.map((n) => (
-                <div
-                  key={n.id}
-                  className={cn(
-                    "border-b border-slate-50 px-4 py-3 last:border-0",
-                    !n.read && "bg-brand-blue/[0.03]",
-                  )}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-slate-900">{n.title}</p>
-                      <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{n.message}</p>
-                      {n.link ? (
-                        <Link
-                          href={n.link}
-                          onClick={() => {
-                            if (!n.read) handleMarkRead(n.id);
-                            setOpen(false);
-                          }}
-                          className="mt-1 inline-block text-xs font-medium text-brand-blue hover:underline"
-                        >
-                          View
-                        </Link>
-                      ) : null}
-                    </div>
-                    {!n.read ? (
-                      <button
-                        type="button"
-                        title="Mark as read"
-                        disabled={pending}
-                        onClick={() => handleMarkRead(n.id)}
-                        className="shrink-0 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-brand-blue"
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                      </button>
-                    ) : null}
-                  </div>
-                </div>
-              ))
+              <>{items.map(renderNotification)}</>
             )}
           </div>
         </div>
       ) : null}
     </div>
   );
+
+  function renderNotification(n: DashboardNotification) {
+    const content = (
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium text-slate-900">{n.title}</p>
+          <p className="mt-0.5 line-clamp-2 text-xs text-slate-500">{n.message}</p>
+          {n.link ? (
+            <span className="mt-1 inline-block text-xs font-medium text-brand-blue hover:underline">
+              View
+            </span>
+          ) : null}
+        </div>
+        {!n.read ? (
+          <button
+            type="button"
+            title="Mark as read"
+            disabled={pending}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleMarkRead(n.id);
+            }}
+            className="shrink-0 rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-brand-blue"
+          >
+            <Check className="h-3.5 w-3.5" />
+          </button>
+        ) : null}
+      </div>
+    );
+
+    if (n.link) {
+      return (
+        <Link
+          key={n.id}
+          href={n.link}
+          onClick={() => {
+            if (!n.read) handleMarkRead(n.id);
+            setOpen(false);
+          }}
+          className={cn(
+            "block border-b border-slate-50 px-4 py-3 last:border-0 hover:bg-slate-50",
+            !n.read && "bg-brand-blue/[0.03]",
+          )}
+        >
+          {content}
+        </Link>
+      );
+    }
+
+    return (
+      <div
+        key={n.id}
+        className={cn(
+          "border-b border-slate-50 px-4 py-3 last:border-0",
+          !n.read && "bg-brand-blue/[0.03]",
+        )}
+      >
+        {content}
+      </div>
+    );
+  }
 }
 
 export function DashboardSearchInput({ searchPath = "/user/discover" }: { searchPath?: string }) {

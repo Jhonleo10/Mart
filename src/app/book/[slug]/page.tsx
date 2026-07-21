@@ -91,6 +91,7 @@ export default async function BookDemoPage({ params }: PageProps) {
           pricingModel: product.pricingModel,
           price: product.price,
           companyId: product.companyId,
+          adminVerified: product.adminVerified,
           features: product.features,
           integrations: product.integrations,
           deploymentTypes: product.deploymentTypes,

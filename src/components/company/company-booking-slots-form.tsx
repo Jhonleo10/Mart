@@ -20,11 +20,20 @@ export function CompanyBookingSlotsForm({
   const { confirm, confirmDialog } = useConfirmDialog();
   const [selected, setSelected] = useState<Set<string>>(new Set(selectedSlotIds));
   const [saving, setSaving] = useState(false);
-  const [customTime, setCustomTime] = useState("");
+  const [customStartTime, setCustomStartTime] = useState("");
+  const [customEndTime, setCustomEndTime] = useState("");
   const [addingCustom, setAddingCustom] = useState(false);
 
   async function handleAddCustom() {
-    if (!customTime) return;
+    if (!customStartTime || !customEndTime) {
+      toast.error("Select both start and end time");
+      return;
+    }
+
+    if (customStartTime >= customEndTime) {
+      toast.error("End time must be after start time");
+      return;
+    }
 
     const ok = await confirm({
       title: "Add custom time slot?",
@@ -36,11 +45,14 @@ export function CompanyBookingSlotsForm({
 
     setAddingCustom(true);
 
-    // Format customTime ("HH:mm") into a label (e.g. "02:30 PM")
-    const date = new Date(`2000-01-01T${customTime}:00`);
-    const label = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const startDate = new Date(`2000-01-01T${customStartTime}:00`);
+    const endDate = new Date(`2000-01-01T${customEndTime}:00`);
+    const startLabel = startDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const endLabel = endDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const label = `${startLabel} - ${endLabel}`;
+    const value = `${customStartTime}-${customEndTime}`;
 
-    const result = await createCustomTimeSlot(label, customTime);
+    const result = await createCustomTimeSlot(label, value);
     setAddingCustom(false);
 
     if ("error" in result) {
@@ -51,7 +63,8 @@ export function CompanyBookingSlotsForm({
     if (result.data?.id) {
       setSelected(new Set([...Array.from(selected), result.data.id]));
       toast.success("Custom time slot added and selected");
-      setCustomTime("");
+      setCustomStartTime("");
+      setCustomEndTime("");
       router.refresh();
     }
   }
@@ -137,11 +150,20 @@ export function CompanyBookingSlotsForm({
         <div className="flex flex-1 items-center gap-2">
           <input
             type="time"
-            value={customTime}
-            onChange={(e) => setCustomTime(e.target.value)}
+            value={customStartTime}
+            onChange={(e) => setCustomStartTime(e.target.value)}
             className="flex-1 rounded-lg border-slate-200 h-9 shrink-0 text-sm focus:ring-brand-blue focus:border-brand-blue"
+            placeholder="Start"
           />
-          <Button type="button" size="sm" variant="secondary" onClick={handleAddCustom} disabled={addingCustom || !customTime}>
+          <span className="text-xs text-slate-400">to</span>
+          <input
+            type="time"
+            value={customEndTime}
+            onChange={(e) => setCustomEndTime(e.target.value)}
+            className="flex-1 rounded-lg border-slate-200 h-9 shrink-0 text-sm focus:ring-brand-blue focus:border-brand-blue"
+            placeholder="End"
+          />
+          <Button type="button" size="sm" variant="secondary" onClick={handleAddCustom} disabled={addingCustom || !customStartTime || !customEndTime}>
             {addingCustom ? "Adding..." : "Add"}
           </Button>
         </div>

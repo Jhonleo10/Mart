@@ -186,13 +186,28 @@ export async function completeMeetingAction(
   notes?: string,
 ): Promise<ActionResult> {
   try {
-    const { session, company } = await requireCompany();
-    await meetingService.completeMeeting({
-      meetingId,
-      companyId: company.id,
-      actorId: session.user.id,
-      notes,
-    });
+    const session = await auth();
+    if (!session?.user) throw new AppError("Unauthorized", 401);
+
+    if (session.user.role === "COMPANY") {
+      const company = await companyRepository.findByUserId(session.user.id);
+      if (!company) throw new AppError("Company not found", 404);
+      await meetingService.completeMeeting({
+        meetingId,
+        companyId: company.id,
+        actorId: session.user.id,
+        notes,
+      });
+    } else if (session.user.role === "USER") {
+      await meetingService.completeMeeting({
+        meetingId,
+        userId: session.user.id,
+        actorId: session.user.id,
+        notes,
+      });
+    } else {
+      throw new AppError("Unauthorized", 401);
+    }
 
     revalidatePath("/company/meetings");
     revalidatePath("/user/meetings");

@@ -263,24 +263,24 @@ export function PricingAdminForm({ initialPlans }: { initialPlans: PricingPlan[]
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <Label>Display price</Label>
-                        <Input
-                          value={plan.price}
-                          onChange={(e) => updatePlan(index, "price", e.target.value)}
-                        />
-                      </div>
-                      <div>
-                        <Label>Amount (INR)</Label>
+                        <Label>Price (INR)</Label>
                         <Input
                           type="number"
                           value={plan.priceAmount ?? ""}
-                          onChange={(e) =>
-                            updatePlan(
-                              index,
-                              "priceAmount",
-                              e.target.value ? Number(e.target.value) : null,
-                            )
-                          }
+                          onChange={(e) => {
+                            const amount = e.target.value ? Number(e.target.value) : null;
+                            updatePlan(index, "priceAmount", amount);
+                            if (amount !== null) {
+                              updatePlan(index, "price", `₹${amount.toLocaleString("en-IN")}`);
+                            }
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <Label>Period</Label>
+                        <Input
+                          value={plan.period}
+                          onChange={(e) => updatePlan(index, "period", e.target.value)}
                         />
                       </div>
                     </div>

@@ -80,20 +80,56 @@ export function ProductForm({
     }
   };
 
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  function validateAll(): boolean {
+    const errors: Record<string, string> = {};
+
+    if (!fields.name.trim() || fields.name.trim().length < 2) {
+      errors.name = "Product name is required (min 2 characters)";
+    }
+    if (!fields.shortDescription.trim() || fields.shortDescription.trim().length < 10) {
+      errors.shortDescription = "Short description required (min 10 characters)";
+    }
+    if (!fields.fullDescription.trim() || fields.fullDescription.trim().length < 50) {
+      errors.fullDescription = "Full description required (min 50 characters)";
+    }
+    if (!fields.categoryId) {
+      errors.categoryId = "Category is required";
+    }
+    if (!hasShowcaseImage(showcaseSlots)) {
+      errors.images = "Upload at least one product screenshot";
+    }
+    if (showcaseSlots.some((s) => s.uploading)) {
+      errors.images = "Please wait for image uploads to finish";
+    }
+    const validFeatures = features.filter(Boolean);
+    if (validFeatures.length === 0) {
+      errors.features = "At least one feature is required";
+    }
+
+    setFieldErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      const firstErrorField = Object.keys(errors)[0]!;
+      const el = document.getElementById(`field-${firstErrorField}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.focus();
+      }
+      return false;
+    }
+    return true;
+  }
+
   /* ── Submit ─────────────────────────────────────────────────────── */
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    setFieldErrors({});
+
     const form = getValidatedForm(e);
     if (!form) return;
 
-    if (!hasShowcaseImage(showcaseSlots)) {
-      toast.error("Please upload at least one product screenshot.");
-      return;
-    }
-
-    if (showcaseSlots.some((s) => s.uploading)) {
-      toast.error("Please wait for image uploads to finish.");
-      return;
-    }
+    if (!validateAll()) return;
 
     const formData = new FormData(form);
     features.filter(Boolean).forEach((f) => formData.append("features", f));
@@ -119,6 +155,7 @@ export function ProductForm({
       setFeatures(["", "", ""]);
       setTags([]);
       setTagInput("");
+      setFieldErrors({});
       setShowcaseSlots(createDefaultShowcaseSlots(2));
       router.push("/company/products");
       router.refresh();
@@ -148,7 +185,7 @@ export function ProductForm({
 
             <div className="space-y-6 p-8">
               <div className="grid gap-6 sm:grid-cols-2">
-                <div className="space-y-2">
+                <div className="space-y-2" id="field-name">
                   <Label htmlFor="name" className="text-xs font-bold uppercase tracking-widest text-slate-400">
                     Product Title
                   </Label>
@@ -156,13 +193,14 @@ export function ProductForm({
                     name="name"
                     id="name"
                     value={fields.name}
-                    onChange={(e) => setField("name", e.target.value)}
+                    onChange={(e) => { setField("name", e.target.value); setFieldErrors((prev) => { const next = { ...prev }; delete next.name; return next; }); }}
                     required
-                    className="h-12 rounded-2xl border-slate-200 bg-slate-50/50 px-4 text-slate-900 transition-all focus:bg-white focus:ring-4 focus:ring-brand-blue/5"
+                    className={`h-12 rounded-2xl bg-slate-50/50 px-4 text-slate-900 transition-all focus:bg-white focus:ring-4 focus:ring-brand-blue/5 ${fieldErrors.name ? "border-red-400 ring-2 ring-red-200" : "border-slate-200"}`}
                     placeholder="e.g. Acme CRM"
                   />
+                  {fieldErrors.name && <p className="text-xs text-red-600 mt-1">{fieldErrors.name}</p>}
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2" id="field-shortDescription">
                   <Label htmlFor="shortDescription" className="text-xs font-bold uppercase tracking-widest text-slate-400">
                     Catchy Tagline
                   </Label>
@@ -170,15 +208,16 @@ export function ProductForm({
                     name="shortDescription"
                     id="shortDescription"
                     value={fields.shortDescription}
-                    onChange={(e) => setField("shortDescription", e.target.value)}
+                    onChange={(e) => { setField("shortDescription", e.target.value); setFieldErrors((prev) => { const next = { ...prev }; delete next.shortDescription; return next; }); }}
                     required
-                    className="h-12 rounded-2xl border-slate-200 bg-slate-50/50 px-4 text-slate-900 transition-all focus:bg-white focus:ring-4 focus:ring-brand-blue/5"
+                    className={`h-12 rounded-2xl bg-slate-50/50 px-4 text-slate-900 transition-all focus:bg-white focus:ring-4 focus:ring-brand-blue/5 ${fieldErrors.shortDescription ? "border-red-400 ring-2 ring-red-200" : "border-slate-200"}`}
                     placeholder="The only CRM you'll ever need"
                   />
+                  {fieldErrors.shortDescription && <p className="text-xs text-red-600 mt-1">{fieldErrors.shortDescription}</p>}
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2" id="field-fullDescription">
                 <Label htmlFor="fullDescription" className="text-xs font-bold uppercase tracking-widest text-slate-400">
                   Detailed Story
                 </Label>
@@ -186,22 +225,26 @@ export function ProductForm({
                   name="fullDescription"
                   id="fullDescription"
                   value={fields.fullDescription}
-                  onChange={(e) => setField("fullDescription", e.target.value)}
+                  onChange={(e) => { setField("fullDescription", e.target.value); setFieldErrors((prev) => { const next = { ...prev }; delete next.fullDescription; return next; }); }}
                   required
                   rows={8}
-                  className="rounded-2xl border-slate-200 bg-slate-50/50 p-4 text-slate-900 transition-all focus:bg-white focus:ring-4 focus:ring-brand-blue/5"
+                  className={`rounded-2xl bg-slate-50/50 p-4 text-slate-900 transition-all focus:bg-white focus:ring-4 focus:ring-brand-blue/5 ${fieldErrors.fullDescription ? "border-red-400 ring-2 ring-red-200" : "border-slate-200"}`}
                   placeholder="Tell the world why your product is amazing..."
                 />
+                {fieldErrors.fullDescription && <p className="text-xs text-red-600 mt-1">{fieldErrors.fullDescription}</p>}
               </div>
             </div>
           </div>
 
-          <VisualShowcaseField
-            slots={showcaseSlots}
-            onChange={setShowcaseSlots}
-            minSlots={2}
-            uploadFolder="products"
-          />
+          <div id="field-images">
+            <VisualShowcaseField
+              slots={showcaseSlots}
+              onChange={setShowcaseSlots}
+              minSlots={2}
+              uploadFolder="products"
+            />
+            {fieldErrors.images && <p className="text-xs text-red-600 mt-2">{fieldErrors.images}</p>}
+          </div>
 
           {/* 3. Global Reach (Links) */}
           <div className="group rounded-3xl border border-slate-200 bg-white p-1 shadow-sm transition-all hover:shadow-md">
@@ -321,19 +364,20 @@ export function ProductForm({
               </h3>
 
               <div className="space-y-6">
-                <div className="space-y-2">
+                <div className="space-y-2" id="field-categoryId">
                   <Label className="text-xs font-bold uppercase tracking-widest text-slate-400">Industry Segment</Label>
                   <select
                     name="categoryId"
                     id="categoryId"
                     value={fields.categoryId}
-                    onChange={(e) => setField("categoryId", e.target.value)}
+                    onChange={(e) => { setField("categoryId", e.target.value); setFieldErrors((prev) => { const next = { ...prev }; delete next.categoryId; return next; }); }}
                     required
-                    className="flex h-12 w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-4 text-sm font-medium text-slate-800 transition-all focus:bg-white focus:ring-4 focus:ring-brand-blue/5"
+                    className={`flex h-12 w-full rounded-2xl bg-slate-50/50 px-4 text-sm font-medium text-slate-800 transition-all focus:bg-white focus:ring-4 focus:ring-brand-blue/5 ${fieldErrors.categoryId ? "border-red-400 ring-2 ring-red-200" : "border border-slate-200"}`}
                   >
                     <option value="">Select Category</option>
                     {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                   </select>
+                  {fieldErrors.categoryId && <p className="text-xs text-red-600 mt-1">{fieldErrors.categoryId}</p>}
                 </div>
 
                 <div className="space-y-2">
@@ -360,10 +404,11 @@ export function ProductForm({
             </div>
 
             {/* Value Points */}
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm" id="field-features">
               <h3 className="text-sm font-bold flex items-center gap-2 text-slate-900 border-b border-slate-50 pb-4 mb-5">
                 <Star className="h-4 w-4 text-amber-500 fill-amber-500" /> Core Features
               </h3>
+              {fieldErrors.features && <p className="text-xs text-red-600 mb-3">{fieldErrors.features}</p>}
 
               <div className="space-y-3">
                 {features.map((f, i) => (

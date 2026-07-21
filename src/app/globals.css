@@ -3086,8 +3086,34 @@ body {
   }
 
   .auth-screen-card-fit .auth-otp-digit {
-    height: 2.375rem;
-    font-size: 0.95rem;
+    height: 2.75rem;
+    font-size: 1.125rem;
+  }
+
+  .auth-otp-digit {
+    border: 2px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    transition: all 0.2s ease;
+  }
+
+  .auth-otp-digit:hover:not(:disabled) {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+  }
+
+  .auth-otp-digit:focus {
+    outline: none;
+    border-color: var(--brand-blue);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(0, 118, 223, 0.15);
+  }
+
+  .auth-otp-digit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f1f5f9;
   }
 
   .auth-screen-card-fit .otp-attempt-meter {
@@ -3565,7 +3591,8 @@ body {
 .admin-table {
   width: 100%;
   min-width: 36rem;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 0.875rem;
 }
 
@@ -3573,40 +3600,43 @@ body {
   position: sticky;
   top: 0;
   z-index: 1;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  border-bottom: 2px solid rgba(226, 232, 240, 0.9);
   background: rgba(248, 250, 252, 0.98);
 }
 
 .admin-table th {
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   text-align: center;
   font-weight: 600;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   color: #64748b;
+  white-space: nowrap;
 }
 
 .admin-table td {
-  padding: 0.75rem 1rem;
+  padding: 0.875rem 1rem;
   color: #475569;
   vertical-align: middle;
+  min-height: 3rem;
 }
 
 .admin-table tbody tr {
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  transition: background-color 0.15s ease;
 }
 
 .admin-table tbody tr:hover {
-  background: rgba(0, 118, 223, 0.04);
+  background: rgba(0, 118, 223, 0.03);
 }
 
 .admin-table tbody tr:nth-child(even) {
-  background: rgba(248, 250, 252, 0.55);
+  background: rgba(248, 250, 252, 0.4);
 }
 
 .admin-table tbody tr:nth-child(even):hover {
-  background: rgba(0, 118, 223, 0.06);
+  background: rgba(0, 118, 223, 0.05);
 }
 
 .admin-table-companies td:nth-child(2) {

@@ -18,7 +18,7 @@ import {
 import { BookingForm } from "@/components/forms/booking-form";
 import { ProductImageCarousel } from "@/components/products/product-image-carousel";
 import { calculateAverageRating, cn } from "@/lib/utils";
-import { previewList, previewText } from "@/lib/product-preview";
+import { previewList } from "@/lib/product-preview";
 import { formatProductPriceLabel } from "@/lib/product-price";
 
 type BookDemoProduct = {
@@ -39,6 +39,7 @@ type BookDemoProduct = {
   hasMobileApp: boolean;
   hasApiAccess: boolean;
   websiteUrl: string | null;
+  adminVerified: boolean;
   company: {
     name: string;
     logo: string | null;
@@ -73,10 +74,7 @@ export function ProductBookDemoView({
       ? calculateAverageRating(product.reviews.map((r) => r.rating))
       : 0;
   const featureTags = product.tags.map((t) => t.tag.name).slice(0, 8);
-  const { preview: descriptionPreview, isTruncated: descTruncated } = previewText(
-    product.fullDescription || product.shortDescription,
-    0.5,
-  );
+  const descriptionFull = product.fullDescription || product.shortDescription;
   const { visible: visibleFeatures, hiddenCount: hiddenFeatures } = previewList(product.features, 0.5);
   const { visible: visibleIntegrations, hiddenCount: hiddenIntegrations } = previewList(
     product.integrations,
@@ -135,7 +133,7 @@ export function ProductBookDemoView({
                     )}
                     {product.company.name}
                   </span>
-                  {product.company.status === "APPROVED" && (
+                  {product.adminVerified && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-brand-green/10 px-2.5 py-0.5 text-xs font-medium text-brand-green-dark">
                       <Shield className="h-3 w-3" />
                       Verified vendor
@@ -183,13 +181,8 @@ export function ProductBookDemoView({
             <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-7">
               <h2 className="font-heading text-lg font-semibold text-slate-900">About this product</h2>
               <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">
-                {descriptionPreview}
+                {descriptionFull}
               </p>
-              {descTruncated && (
-                <p className="mt-2 text-xs text-slate-400">
-                  Sign in and book a demo to discuss the full solution with the vendor.
-                </p>
-              )}
             </div>
 
             {visibleFeatures.length > 0 && (

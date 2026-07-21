@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { EmailInput } from "@/components/ui/email-input";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react";
-import { FIELD_LIMITS, PASSWORD_HINT, EMAIL_HINT, PHONE_HINT } from "@/lib/validations/client";
+import { FIELD_LIMITS, PASSWORD_HINT, PHONE_HINT } from "@/lib/validations/client";
 import { registerSchema } from "@/lib/validations";
 import { getValidatedForm } from "@/lib/validations/form-submit";
 import { AUTH_PATHS, isSafeCallbackUrl } from "@/lib/auth-paths";
@@ -121,7 +121,6 @@ export default function RegisterForm() {
             label="Email"
             htmlFor="email"
             error={fieldError("email")}
-            hint={EMAIL_HINT}
           >
             <div className="auth-input-wrap">
               <Mail className="auth-input-icon" />

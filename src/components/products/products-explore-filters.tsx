@@ -1,4 +1,6 @@
-import Link from "next/link";
+"use client";
+
+import { useRef } from "react";
 import { Filter, RotateCcw, Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -20,6 +22,24 @@ export function ProductsExploreFilters({
     sort?: string;
   };
 }) {
+  const formRef = useRef<HTMLFormElement>(null);
+
+  function handleReset() {
+    const form = formRef.current;
+    if (!form) return;
+    const inputs = form.querySelectorAll<HTMLInputElement | HTMLSelectElement>(
+      "input, select",
+    );
+    inputs.forEach((el) => {
+      if (el.name === "sort") {
+        el.value = "popular";
+      } else {
+        el.value = "";
+      }
+    });
+    form.submit();
+  }
+
   return (
     <div className="catalog-filter-shell">
       <div className="catalog-filter-head">
@@ -32,7 +52,7 @@ export function ProductsExploreFilters({
         </div>
       </div>
 
-      <form method="GET" action="/products" className="mt-5 space-y-4">
+      <form ref={formRef} method="GET" action="/products" className="mt-5 space-y-4">
         <div>
           <label htmlFor="q" className="catalog-filter-label">
             <Search className="h-3.5 w-3.5" />
@@ -96,12 +116,10 @@ export function ProductsExploreFilters({
           <Button type="submit" className="flex-1 bg-gradient-brand">
             Apply filters
           </Button>
-          <Link href="/products">
-            <Button type="button" variant="outline" className="gap-1.5">
-              <RotateCcw className="h-3.5 w-3.5" />
-              Reset
-            </Button>
-          </Link>
+          <Button type="button" variant="outline" className="gap-1.5" onClick={handleReset}>
+            <RotateCcw className="h-3.5 w-3.5" />
+            Reset
+          </Button>
         </div>
       </form>
     </div>

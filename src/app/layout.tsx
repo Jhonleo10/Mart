@@ -11,11 +11,13 @@ const heading = Plus_Jakarta_Sans({
   variable: "--font-heading",
   subsets: ["latin"],
   weight: ["600", "700", "800"],
+  display: "swap",
 });
 
 const body = DM_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export function generateMetadata(): Metadata {
@@ -36,6 +38,14 @@ export function generateMetadata(): Metadata {
       siteName: site.name,
     },
     robots: { index: true, follow: true },
+    icons: {
+      icon: [
+        { url: "/GMT 4.png", type: "image/png", sizes: "any" },
+      ],
+      apple: [
+        { url: "/GMT 4.png", type: "image/png", sizes: "any" },
+      ],
+    },
   };
 }
 

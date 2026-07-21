@@ -24,7 +24,7 @@ const getHomeCompanies = unstable_cache(
       where: { status: "APPROVED" },
       take: 12,
       orderBy: { createdAt: "desc" },
-      select: { name: true, logo: true, industry: true },
+      select: { name: true, slug: true, logo: true, industry: true },
     }),
   ["home-page-companies"],
   { revalidate: 300, tags: ["home-page", "companies"] },

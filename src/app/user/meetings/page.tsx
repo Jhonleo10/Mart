@@ -4,14 +4,12 @@ import { auth } from "@/lib/auth";
 import { meetingRepository } from "@/repositories/meeting.repository";
 import { MeetingCard } from "@/components/meeting/meeting-card";
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-stat-card";
-import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
 import { DashboardPagination, DASHBOARD_PAGE_SIZE } from "@/components/dashboard/dashboard-pagination";
 import { BuyerFlowCallout } from "@/components/user/buyer-flow-callout";
 import { Button } from "@/components/ui/button";
-import type { MeetingStatus } from "@prisma/client";
 
 interface PageProps {
-  searchParams: Promise<{ tab?: string; status?: string; page?: string }>;
+  searchParams: Promise<{ tab?: string; page?: string }>;
 }
 
 const TABS = [
@@ -29,12 +27,10 @@ export default async function UserMeetingsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const page = Number(params.page ?? 1);
   const tab = params.tab ?? "";
-  const status = params.status as MeetingStatus | undefined;
 
   const [meetings, total] = await meetingRepository.listByUserPaginated(session.user.id, {
     page,
     limit: DASHBOARD_PAGE_SIZE,
-    status: status || undefined,
     tab: tab || undefined,
   });
 
@@ -47,42 +43,28 @@ export default async function UserMeetingsPage({ searchParams }: PageProps) {
 
       <BuyerFlowCallout className="mb-4" />
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {TABS.map((t) => (
-          <Link
-            key={t.value || "all"}
-            href={t.value ? `/user/meetings?tab=${t.value}` : "/user/meetings"}
-            className={`buyer-pill rounded-full px-3 py-1.5 text-sm font-medium transition ${
-              tab === t.value
-                ? "bg-brand-blue text-white shadow-sm"
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
-            }`}
-          >
-            {t.label}
-          </Link>
-        ))}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap gap-2">
+          {TABS.map((t) => (
+            <Link
+              key={t.value || "all"}
+              href={t.value ? `/user/meetings?tab=${t.value}` : "/user/meetings"}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                tab === t.value
+                  ? "bg-brand-blue text-white shadow-sm shadow-brand-blue/20"
+                  : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:ring-slate-300"
+              }`}
+            >
+              {t.label}
+            </Link>
+          ))}
+        </div>
+        <span className="text-sm text-slate-400">
+          {total} {total === 1 ? "meeting" : "meetings"}
+        </span>
       </div>
 
-      <DashboardFilterBar
-        basePath="/user/meetings"
-        values={{ status: params.status, tab: params.tab }}
-        resultCount={total}
-        resultLabel="meetings"
-        fields={[
-          {
-            name: "status",
-            type: "select",
-            label: "Status",
-            options: [
-              { value: "SCHEDULED", label: "Scheduled" },
-              { value: "COMPLETED", label: "Completed" },
-              { value: "CANCELLED", label: "Cancelled" },
-            ],
-          },
-        ]}
-      />
-
-      <div className="mt-4 space-y-4">
+      <div className="space-y-4">
         {meetings.map((meeting) => (
           <MeetingCard key={meeting.id} meeting={meeting} role="USER" />
         ))}
@@ -100,7 +82,7 @@ export default async function UserMeetingsPage({ searchParams }: PageProps) {
         total={total}
         page={page}
         basePath="/user/meetings"
-        searchParams={{ status: params.status, tab: params.tab }}
+        searchParams={{ tab: params.tab }}
       />
     </div>
   );

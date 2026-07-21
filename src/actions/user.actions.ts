@@ -8,7 +8,8 @@ import { prisma } from "@/lib/prisma";
 import { hashPassword, verifyPassword } from "@/lib/security/password";
 import { auditLog } from "@/lib/security/audit";
 import { passwordChangeSchema, userProfileUpdateSchema } from "@/lib/validations";
-import { wishlistRepository, notificationRepository } from "@/repositories/notification.repository";
+import { notificationRepository } from "@/repositories/notification.repository";
+import { wishlistRepository } from "@/repositories/wishlist.repository";
 import type { ActionResult } from "@/lib/action-types";
 
 const USER_REVALIDATE_PATHS = [

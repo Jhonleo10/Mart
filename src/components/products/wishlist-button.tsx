@@ -120,7 +120,7 @@ export function WishlistButton({
 
     >
 
-      <Heart className={cn("h-3.5 w-3.5", isSaved && "fill-brand-green")} />
+      <Heart className="h-3.5 w-3.5" fill={isSaved ? "currentColor" : "none"} />
 
       {!compact && (isSaved ? "Saved" : "Save")}
 

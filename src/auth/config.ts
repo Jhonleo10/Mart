@@ -1,6 +1,8 @@
 import type { NextAuthConfig } from "next-auth";
 
 function useSecureCookies(): boolean {
+  if (process.env.NODE_ENV === "development") return false;
+
   // Prefer explicit public URL protocol; fall back to production NODE_ENV.
   const url =
     process.env.AUTH_URL ??

@@ -17,6 +17,20 @@ const createCustomSlotSchema = z.object({
   value: z.string().min(1, "Value is required"),
 });
 
+/** Parse a custom slot value in "HH:mm-HH:mm" format into [startMinutes, endMinutes] */
+function parseCustomSlotRange(value: string): { start: number; end: number } | null {
+  const parts = value.split("-");
+  if (parts.length !== 2) return null;
+  const [startStr, endStr] = parts;
+  const startMatch = startStr!.match(/^(\d{2}):(\d{2})$/);
+  const endMatch = endStr!.match(/^(\d{2}):(\d{2})$/);
+  if (!startMatch || !endMatch) return null;
+  const start = parseInt(startMatch[1]) * 60 + parseInt(startMatch[2]);
+  const end = parseInt(endMatch[1]) * 60 + parseInt(endMatch[2]);
+  if (end <= start) return null;
+  return { start, end };
+}
+
 export async function createCustomTimeSlot(label: string, value: string): Promise<ActionResult<{ id: string }>> {
   try {
     const session = await auth();
@@ -32,23 +46,33 @@ export async function createCustomTimeSlot(label: string, value: string): Promis
       throw new AppError(parsed.error.issues[0]?.message ?? "Invalid input");
     }
 
-    // Generate sort order (rough estimation from HH:mm)
-    let sortOrder = 0;
-    const match = value.match(/^(\d{2}):(\d{2})$/);
-    if (match) {
-      sortOrder = parseInt(match[1]) * 60 + parseInt(match[2]);
-    } else {
-      sortOrder = 1440; // End of day
+    // Parse and validate the range for custom slots
+    const range = parseCustomSlotRange(parsed.data.value);
+    if (!range) {
+      throw new AppError("Invalid time range format. Expected HH:mm-HH:mm with end after start");
     }
+
+    // Sort order uses the start time
+    const sortOrder = range.start;
 
     const { prisma } = await import("@/lib/prisma");
 
+    // Check for exact duplicate
     const existing = await prisma.bookingTimeSlot.findFirst({
       where: { OR: [{ label }, { value }] }
     });
 
     if (existing) {
       return { success: true, data: { id: existing.id } };
+    }
+
+    // Check for overlapping slots
+    const allSlots = await prisma.bookingTimeSlot.findMany({ select: { id: true, value: true } });
+    for (const slot of allSlots) {
+      const existingRange = parseCustomSlotRange(slot.value);
+      if (existingRange && range.start < existingRange.end && range.end > existingRange.start) {
+        throw new AppError("This time slot overlaps with an existing slot");
+      }
     }
 
     const newSlot = await prisma.bookingTimeSlot.create({

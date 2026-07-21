@@ -10,11 +10,10 @@ import { MeetingCard } from "@/components/meeting/meeting-card";
 import { GoogleCalendarConnect } from "@/components/meeting/google-calendar-connect";
 import { GoogleConnectToast } from "@/components/meeting/google-connect-toast";
 import { DashboardPageHeader } from "@/components/dashboard/dashboard-stat-card";
-import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
 import { DashboardPagination, DASHBOARD_PAGE_SIZE } from "@/components/dashboard/dashboard-pagination";
 
 interface PageProps {
-  searchParams: Promise<{ tab?: string; q?: string; page?: string }>;
+  searchParams: Promise<{ tab?: string; page?: string }>;
 }
 
 const TABS = [
@@ -40,7 +39,6 @@ export default async function CompanyMeetingsPage({ searchParams }: PageProps) {
       page,
       limit: DASHBOARD_PAGE_SIZE,
       tab,
-      q: params.q,
     }),
     companyGoogleRepository.findByCompanyId(company.id),
   ]);
@@ -63,38 +61,28 @@ export default async function CompanyMeetingsPage({ searchParams }: PageProps) {
         />
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
-        {TABS.map((t) => (
-          <Link
-            key={t.value}
-            href={`/company/meetings?tab=${t.value}`}
-            className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
-              tab === t.value
-                ? "bg-brand-green text-white shadow-sm"
-                : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50"
-            }`}
-          >
-            {t.label}
-          </Link>
-        ))}
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap gap-2">
+          {TABS.map((t) => (
+            <Link
+              key={t.value}
+              href={`/company/meetings?tab=${t.value}`}
+              className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                tab === t.value
+                  ? "bg-brand-green text-white shadow-sm shadow-brand-green/20"
+                  : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 hover:ring-slate-300"
+              }`}
+            >
+              {t.label}
+            </Link>
+          ))}
+        </div>
+        <span className="text-sm text-slate-400">
+          {total} {total === 1 ? "meeting" : "meetings"}
+        </span>
       </div>
 
-      <DashboardFilterBar
-        basePath="/company/meetings"
-        values={{ tab: params.tab, q: params.q }}
-        resultCount={total}
-        resultLabel="meetings"
-        fields={[
-          {
-            name: "q",
-            type: "search",
-            label: "Search",
-            placeholder: "Customer or product...",
-          },
-        ]}
-      />
-
-      <div className="mt-4 space-y-4">
+      <div className="space-y-4">
         {meetingRows.map((meeting) => (
           <MeetingCard key={meeting.id} meeting={meeting} role="COMPANY" showCustomer />
         ))}
@@ -113,7 +101,7 @@ export default async function CompanyMeetingsPage({ searchParams }: PageProps) {
         total={total}
         page={page}
         basePath="/company/meetings"
-        searchParams={{ tab: params.tab, q: params.q }}
+        searchParams={{ tab: params.tab }}
       />
     </div>
   );

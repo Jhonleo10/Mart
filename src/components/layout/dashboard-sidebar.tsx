@@ -6,6 +6,8 @@ import Link from "next/link";
 
 import { usePathname } from "next/navigation";
 
+import { useState } from "react";
+
 import { ChevronLeft, ChevronRight, LogOut, User, X } from "lucide-react";
 
 import Image from "next/image";
@@ -23,7 +25,10 @@ import type { DashboardVariant } from "@/lib/dashboard-themes";
 import { DASHBOARD_THEMES } from "@/lib/dashboard-themes";
 
 import { BRAND } from "@/lib/brand";
+
 import { SiteBrandName } from "@/components/brand/site-brand-name";
+
+import { ConfirmDialogUI, type ConfirmOptions } from "@/components/ui/confirm-dialog";
 
 
 
@@ -67,11 +72,45 @@ export function DashboardSidebar({
 
   const theme = DASHBOARD_THEMES[variant];
 
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
+
+  const logoutConfirmOptions: ConfirmOptions = {
+
+    title: "Sign Out",
+
+    description: "Are you sure you want to sign out?",
+
+    confirmLabel: "Sign Out",
+
+    cancelLabel: "Cancel",
+
+    variant: "default",
+
+  };
+
 
 
   return (
 
     <>
+
+      <ConfirmDialogUI
+
+        open={logoutDialogOpen}
+
+        options={logoutConfirmOptions}
+
+        onConfirm={() => {
+
+          setLogoutDialogOpen(false);
+
+          if (signOutAction) signOutAction();
+
+        }}
+
+        onCancel={() => setLogoutDialogOpen(false)}
+
+      />
 
       {mobileOpen ? (
 
@@ -113,7 +152,7 @@ export function DashboardSidebar({
 
           <div className="flex items-center justify-between gap-2">
 
-            <Link href="/" className="flex min-w-0 flex-1 items-center gap-2.5">
+            <Link href="/" className={cn("flex min-w-0 flex-1 items-center gap-2.5", collapsed && "justify-center")}>
 
               <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg ring-1 ring-slate-200/80">
 
@@ -273,37 +312,35 @@ export function DashboardSidebar({
 
             <User className="h-[17px] w-[17px] shrink-0" />
 
-            {!collapsed && <span>Profile</span>}
+            {!collapsed && <span>Edit</span>}
 
           </Link>
 
           {signOutAction && (
 
-            <form action={signOutAction}>
+            <button
 
-              <button
+              type="button"
 
-                type="submit"
+              onClick={() => setLogoutDialogOpen(true)}
 
-                title="Sign out"
+              title="Sign out"
 
-                className={cn(
+              className={cn(
 
-                  "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-red-50 hover:text-red-500",
+                "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-red-50 hover:text-red-500",
 
-                  collapsed && "justify-center px-2",
+                collapsed && "justify-center px-2",
 
-                )}
+              )}
 
-              >
+            >
 
-                <LogOut className="h-[17px] w-[17px] shrink-0" />
+              <LogOut className="h-[17px] w-[17px] shrink-0" />
 
-                {!collapsed && <span>Sign Out</span>}
+              {!collapsed && <span>Sign Out</span>}
 
-              </button>
-
-            </form>
+            </button>
 
           )}
 

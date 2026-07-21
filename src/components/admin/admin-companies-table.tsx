@@ -32,10 +32,10 @@ export function AdminCompaniesTable({ companies }: { companies: AdminCompanyRow[
           <tr>
             <th className="w-[2rem] text-center">Profile</th>
             <th>Company</th>
-            <th>Owner</th>
+            <th className="hidden md:table-cell">Owner</th>
             <th className="text-center">Products</th>
-            <th className="text-center">Leads</th>
-            <th className="text-center">Health</th>
+            <th className="text-center hidden sm:table-cell">Leads</th>
+            <th className="text-center hidden lg:table-cell">Health</th>
             <th className="text-center">Status</th>
             <th className="min-w-0 text-center lg:min-w-[12rem]">Actions</th>
           </tr>
@@ -50,8 +50,11 @@ export function AdminCompaniesTable({ companies }: { companies: AdminCompanyRow[
               </td>
               <td className="align-middle">
                 <p className="font-heading truncate text-sm font-bold text-slate-900">{company.name}</p>
+                <p className="truncate text-xs text-slate-500 md:hidden">
+                  {company.owner.name ?? company.ownerName ?? "—"}
+                </p>
               </td>
-              <td className="align-middle">
+              <td className="align-middle hidden md:table-cell">
                 <p className="truncate text-sm font-medium text-slate-700">
                   {company.owner.name ?? company.ownerName ?? "—"}
                 </p>
@@ -59,10 +62,10 @@ export function AdminCompaniesTable({ companies }: { companies: AdminCompanyRow[
               <td className="align-middle text-center">
                 <AdminMetricCell value={company.productCount} tone="blue" />
               </td>
-              <td className="align-middle text-center">
+              <td className="align-middle text-center hidden sm:table-cell">
                 <AdminMetricCell value={company.leadCount} tone="green" />
               </td>
-              <td className="align-middle text-center">
+              <td className="align-middle text-center hidden lg:table-cell">
                 {company.healthScore != null && company.healthLabel ? (
                   <div className="flex justify-center">
                     <VendorHealthMeter score={company.healthScore} label={company.healthLabel} size="sm" />
@@ -89,7 +92,7 @@ export function AdminCompaniesTable({ companies }: { companies: AdminCompanyRow[
                     onClick={() => openDetails(company)}
                   >
                     <Eye className="h-3.5 w-3.5" />
-                    View
+                    <span className="hidden sm:inline">View</span>
                   </Button>
                   {company.status === "PENDING" && (
                     <>

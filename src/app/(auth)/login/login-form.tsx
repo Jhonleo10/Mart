@@ -12,7 +12,7 @@ import { Eye, EyeOff, Lock, Mail, Shield } from "lucide-react";
 import { FIELD_LIMITS } from "@/lib/validations/fields";
 import { loginSchema } from "@/lib/validations";
 import { getValidatedForm, parseFormWithSchema } from "@/lib/validations/form-submit";
-import { AUTH_PATHS, isSafeCallbackUrl } from "@/lib/auth-paths";
+import { AUTH_PATHS, isSafeCallbackUrl, dashboardForRole } from "@/lib/auth-paths";
 import { AuthPageShell } from "@/components/auth/auth-page-shell";
 import {
   ADMIN_UNLOCK_QUERY,
@@ -83,13 +83,11 @@ export default function LoginForm() {
 
       toast.success("Welcome back!");
       const callbackUrl = searchParams.get("callbackUrl");
+      const role = result.data?.role ?? "USER";
       const redirectTo =
-        callbackUrl &&
-        isSafeCallbackUrl(callbackUrl) &&
-        result.data?.role === "USER"
+        callbackUrl && isSafeCallbackUrl(callbackUrl)
           ? callbackUrl
-          : (result.data?.redirectTo ?? AUTH_PATHS.login);
-      // Full navigation ensures HttpOnly session cookies from the server action are sent.
+          : (result.data?.redirectTo ?? dashboardForRole(role));
       window.location.assign(redirectTo);
     } catch (error) {
       console.error("[login]", error);

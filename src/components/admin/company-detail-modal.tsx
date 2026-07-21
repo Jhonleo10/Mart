@@ -118,14 +118,14 @@ export function CompanyDetailModal({ company, open, onOpenChange }: CompanyDetai
               <p className="text-xs font-semibold uppercase tracking-widest text-white/70">
                 {company.industry ?? "Software vendor"}
               </p>
-              <h2 className="font-heading mt-1 text-2xl font-bold">{company.name}</h2>
+              <h2 className="font-heading mt-1 text-2xl font-bold leading-tight">{company.name}</h2>
               <p className="mt-1 text-sm text-white/80">
                 Joined {formatDate(company.createdAt)} · {company.owner.name ?? company.ownerName ?? "Owner"}
               </p>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <StatusBadge status={company.status} />
                 {company.paymentVerified && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide backdrop-blur-sm">
                     <ShieldCheck className="h-3 w-3" />
                     Paid
                   </span>

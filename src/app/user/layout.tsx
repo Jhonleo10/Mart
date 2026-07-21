@@ -15,13 +15,9 @@ import { WishlistProvider } from "@/components/products/wishlist-context";
 
 import { USER_NAV } from "@/lib/dashboard-nav";
 
-import {
+import { notificationRepository } from "@/repositories/notification.repository";
 
-  notificationRepository,
-
-  wishlistRepository,
-
-} from "@/repositories/notification.repository";
+import { wishlistRepository } from "@/repositories/wishlist.repository";
 
 
 
