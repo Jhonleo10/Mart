@@ -40,7 +40,7 @@ export function LandingNav({ className, onNavigate, vertical }: LandingNavProps)
             href={href}
             onClick={onNavigate}
             className={cn(
-              "nav-link-animated rounded-lg px-2.5 py-2 text-[13px] font-medium xl:px-3 xl:text-sm",
+              "nav-link-animated rounded-lg px-2.5 py-2 text-[13px] font-medium xl:px-3 xl:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/50",
               vertical && "px-4 py-3 hover:bg-slate-50",
               active ? "text-brand-blue" : "text-slate-600",
             )}

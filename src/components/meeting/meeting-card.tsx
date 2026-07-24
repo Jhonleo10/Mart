@@ -102,8 +102,8 @@ export function MeetingCard({
   return (
     <article
       className={cn(
-        "buyer-card-hover overflow-hidden rounded-2xl border bg-white shadow-sm transition-all",
-        isBuyerUpcoming
+        "buyer-card-hover overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md",
+        isBuyerUpcoming
           ? "border-brand-blue/20 bg-gradient-to-br from-white via-brand-blue/[0.03] to-brand-green/[0.02]"
           : "border-slate-200/80",
       )}
@@ -230,35 +230,18 @@ export function MeetingCard({
             </div>
           ) : null}
 
-          {role === "USER" ? (
-            <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
-              <Link
-                href={`/user/meetings/${meeting.id}`}
-                className="text-xs font-semibold text-brand-blue hover:underline"
-              >
-                View details
-              </Link>
-              <MeetingActions
-                meetingId={meeting.id}
-                status={meeting.status}
-                role={role}
-                scheduledAt={meeting.scheduledAt.toISOString()}
-                timezone={meeting.timezone}
-                durationMinutes={meeting.durationMinutes}
-              />
-            </div>
-          ) : role === "COMPANY" ? (
-            <div className="mt-4 border-t border-slate-100 pt-4">
-              <MeetingActions
-                meetingId={meeting.id}
-                status={meeting.status}
-                role={role}
-                scheduledAt={meeting.scheduledAt.toISOString()}
-                timezone={meeting.timezone}
-                durationMinutes={meeting.durationMinutes}
-              />
-            </div>
-          ) : null}
+          {(role === "USER" || role === "COMPANY") ? (
+            <div className="mt-4 border-t border-slate-100 pt-4">
+              <MeetingActions
+                meetingId={meeting.id}
+                status={meeting.status}
+                role={role}
+                scheduledAt={meeting.scheduledAt.toISOString()}
+                timezone={meeting.timezone}
+                durationMinutes={meeting.durationMinutes}
+              />
+            </div>
+          ) : null}
         </div>
 
         <div className="shrink-0 self-start sm:pt-1">

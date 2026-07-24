@@ -44,16 +44,16 @@ export function AdminProductsTable({ products }: { products: AdminProductRow[] }
   return (
     <table className="admin-table admin-table-premium admin-table-products admin-table-products-v2">
       <thead>
-        <tr>
-          <th className="w-[4.5rem] text-center">Image</th>
-          <th>Product</th>
-          <th>Company</th>
-          <th>Category</th>
-          <th className="text-center">Views</th>
-          <th>Status</th>
-          <th className="text-center">Verified</th>
-          <th className="text-center">Actions</th>
-        </tr>
+            <tr>
+              <th scope="col" className="w-[4.5rem] text-center">Image</th>
+              <th scope="col">Product</th>
+              <th scope="col">Company</th>
+              <th scope="col">Category</th>
+              <th scope="col" className="text-center">Views</th>
+              <th scope="col">Status</th>
+              <th scope="col" className="text-center">Verified</th>
+              <th scope="col" className="text-center">Actions</th>
+            </tr>
       </thead>
       <tbody>
         {products.map((product) => (

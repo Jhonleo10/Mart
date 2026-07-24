@@ -284,13 +284,6 @@ export function PricingAdminForm({ initialPlans }: { initialPlans: PricingPlan[]
                         />
                       </div>
                     </div>
-                    <div>
-                      <Label>Period</Label>
-                      <Input
-                        value={plan.period}
-                        onChange={(e) => updatePlan(index, "period", e.target.value)}
-                      />
-                    </div>
                   </div>
 
                   <div className="space-y-3">

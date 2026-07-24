@@ -47,7 +47,7 @@ export function CompanyPaymentClient({ plans }: { plans: PricingPlan[] }) {
             amount: amount * 100,
             currency: "INR",
             name: "Genius Mart",
-            description: "Seller Plan Registration",
+            description: "Vendor Plan Registration",
             order_id: orderId,
             handler: async (response: {
                 razorpay_order_id: string;
@@ -86,7 +86,7 @@ export function CompanyPaymentClient({ plans }: { plans: PricingPlan[] }) {
             <div className="mx-auto max-w-lg px-4 py-12">
                 <Card>
                     <CardHeader>
-                        <CardTitle>Select Your Seller Plan</CardTitle>
+                        <CardTitle>Select Your Vendor Plan</CardTitle>
                         <CardDescription>
                             Choose a plan to continue with your company registration.
                         </CardDescription>

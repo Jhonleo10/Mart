@@ -162,7 +162,7 @@ export function VerifyUserForm() {
 
   return (
     <AuthPageShell
-      badge={isSeller ? "Seller Verification" : "Email Verification"}
+      badge={isSeller ? "Vendor Verification" : "Email Verification"}
       badgeTone={isSeller ? "green" : "blue"}
       activeTab="verify"
       compact

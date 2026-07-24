@@ -5,6 +5,7 @@ import { ProductCard } from "@/components/products/product-card";
 import { SpotlightCarousel } from "@/components/landing/spotlight-carousel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ExpandableText } from "@/components/ui/expandable-text";
 import { getProductPublicPath } from "@/lib/product-public-url";
 import { LandingSection, SectionLabel, SectionTitle } from "@/components/landing/landing-primitives";
 import {
@@ -247,10 +248,12 @@ export function VendorLandingPage({ company, theme }: VendorLandingPageProps) {
               <h2 className="font-heading text-left text-2xl font-bold text-slate-900 sm:text-3xl">
                 Why choose <span className="text-gradient">{company.name}</span>?
               </h2>
-              <p className="mt-4 text-left text-base leading-relaxed text-slate-600">
-                {company.description ??
-                  `${company.name} offers business software solutions on Genius Mart. Browse products below and book a personalized demo with their team.`}
-              </p>
+              <div className="mt-4 text-left text-base leading-relaxed text-slate-600">
+                <ExpandableText
+                  text={company.description ?? `${company.name} offers business software solutions on Genius Mart. Browse products below and book a personalized demo with their team.`}
+                  maxChars={350}
+                />
+              </div>
             </div>
             <ul className="mt-6 space-y-3 text-sm text-slate-600">
               <li className="flex items-start gap-2">

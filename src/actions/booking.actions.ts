@@ -370,3 +370,27 @@ export async function updateBookingStatusFormAction(
 ) {
   await updateBookingStatus(bookingId, status, meetingLink);
 }
+
+export async function cancelUserBooking(bookingId: string): Promise<ActionResult> {
+  try {
+    const session = await auth();
+    if (!session?.user) throw new AppError("Unauthorized", 401);
+
+    const booking = await bookingRepository.findById(bookingId);
+    if (!booking) throw new AppError("Booking not found", 404);
+    if (booking.userId !== session.user.id) throw new AppError("Forbidden", 403);
+    if (booking.status === "CLOSED" || booking.status === "CONVERTED") {
+      throw new AppError("Cannot cancel a completed booking", 400);
+    }
+
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: { status: "CLOSED" },
+    });
+    revalidatePath("/user/bookings");
+
+    return { success: true };
+  } catch (error) {
+    return handleActionError(error);
+  }
+}

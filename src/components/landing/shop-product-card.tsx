@@ -56,7 +56,7 @@ export function ShopHeroProductCard({ product }: { product: ShopProductCardData 
   const href = getProductBookDemoPath(product.slug);
 
   return (
-    <Link href={href} className="shop-hero-card group block">
+    <Link href={href} className="shop-hero-card group block overflow-hidden rounded-2xl">
       <div className="shop-hero-card-inner">
         <div className="shop-hero-card-visual relative min-h-[220px] overflow-hidden sm:min-h-[280px] lg:min-h-0 lg:w-[52%]">
           <ProductImage
@@ -126,7 +126,7 @@ export function ShopProductCard({
   return (
     <article
       className={cn(
-        "shop-card group relative flex h-full flex-col",
+        "shop-card group relative flex h-full flex-col overflow-hidden rounded-2xl",
         layout === "carousel"
           ? "min-w-[min(100%,280px)] max-w-[300px] shrink-0 snap-center sm:min-w-[300px]"
           : "w-full min-w-0",
@@ -136,7 +136,7 @@ export function ShopProductCard({
         {String(index + 1).padStart(2, "0")}
       </span>
 
-      <Link href={href} className="shop-card-frame flex flex-1 flex-col overflow-hidden">
+      <Link href={href} className="shop-card-frame flex flex-1 flex-col">
         <div className="relative aspect-[5/4] overflow-hidden">
           <ProductImage
             product={product}

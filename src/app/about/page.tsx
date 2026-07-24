@@ -87,7 +87,7 @@ export default function AboutPage() {
               </Link>
               <Link href={AUTH_PATHS.companyRegister}>
                 <Button variant="green" className="w-full sm:w-auto">
-                  Become a Seller
+                  Become a Vendor
                 </Button>
               </Link>
             </div>

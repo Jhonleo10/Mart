@@ -125,7 +125,7 @@ export function computeRequirementCompleteness(requirements: UserRequirements): 
   return Math.min(100, score);
 }
 
-const STEP_IDS = ["industry", "size", "budget", "features", "integrations", "deployment"] as const;
+const STEP_IDS = ["industry", "size", "budget", "features", "integrations", "deployment", "country"] as const;
 export type RequirementStepId = (typeof STEP_IDS)[number];
 
 export function validateRequirementStep(

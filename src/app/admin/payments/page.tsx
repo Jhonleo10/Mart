@@ -99,12 +99,12 @@ export default async function AdminPaymentsPage({ searchParams }: PageProps) {
         <table className="admin-table admin-table-premium">
           <thead>
             <tr>
-              <th>Company</th>
-              <th>Type</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Order ID</th>
-              <th>Date</th>
+              <th scope="col">Company</th>
+              <th scope="col">Type</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Status</th>
+              <th scope="col">Order ID</th>
+              <th scope="col">Date</th>
             </tr>
           </thead>
           <tbody>

@@ -2,7 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Session } from "next-auth";
 import { auth } from "@/lib/auth";
-import { signOutAction } from "@/actions/auth.actions";
 import { ROLE_ROUTES } from "@/lib/rbac";
 import { AUTH_PATHS } from "@/lib/auth-paths";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { SiteBrandName } from "@/components/brand/site-brand-name";
 import { BecomeSellerLink } from "@/components/ui/become-seller-link";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { LandingNav } from "@/components/layout/landing-nav";
+import { LogoutButton } from "@/components/layout/logout-button";
 
 export async function Header() {
   let session: Session | null = null;
@@ -58,11 +58,7 @@ export async function Header() {
                   Dashboard
                 </Link>
               )}
-              <form action={signOutAction}>
-                <Button type="submit" variant="outline" size="sm">
-                  Sign Out
-                </Button>
-              </form>
+              <LogoutButton variant="outline" size="sm" />
             </>
           ) : (
             <>

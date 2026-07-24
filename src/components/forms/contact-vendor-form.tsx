@@ -58,7 +58,6 @@ export function ContactVendorForm({ companyId }: { companyId: string }) {
         <div className="space-y-2">
           <Label htmlFor="contact-email">Email</Label>
           <EmailInput id="contact-email" name="email" required placeholder="you@company.com" />
-          <p className="text-[11px] text-slate-400">{EMAIL_HINT}</p>
         </div>
       </div>
       <div className="space-y-2">

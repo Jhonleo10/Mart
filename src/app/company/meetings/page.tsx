@@ -62,10 +62,12 @@ export default async function CompanyMeetingsPage({ searchParams }: PageProps) {
       </div>
 
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2" role="tablist">
           {TABS.map((t) => (
             <Link
               key={t.value}
+              role="tab"
+              aria-selected={tab === t.value}
               href={`/company/meetings?tab=${t.value}`}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
                 tab === t.value

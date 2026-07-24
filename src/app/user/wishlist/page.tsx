@@ -39,7 +39,7 @@ export default async function UserSavedPage() {
                 },
                 category: product.category,
                 images: product.images,
-                reviews: [],
+                reviews: product.reviews ?? [],
                 adminVerified: product.adminVerified,
               }}
             />

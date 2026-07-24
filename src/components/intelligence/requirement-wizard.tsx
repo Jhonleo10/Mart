@@ -32,6 +32,7 @@ const STEPS: { id: RequirementStepId; title: string; subtitle: string; optional?
   { id: "features", title: "Must-have features", subtitle: "Capabilities you cannot compromise on" },
   { id: "integrations", title: "Integrations", subtitle: "Tools you already use (optional)", optional: true },
   { id: "deployment", title: "Deployment", subtitle: "Hosting preference (optional)", optional: true },
+  { id: "country", title: "Country", subtitle: "Where is your business based? (optional)", optional: true },
 ];
 
 const INDUSTRIES = [
@@ -85,6 +86,11 @@ const DEPLOYMENT_OPTIONS = [
   { value: "any", label: "No preference" },
 ];
 
+const COUNTRIES = [
+  "IN", "US", "GB", "CA", "AU", "DE", "FR", "SG", "AE", "NL",
+  "BR", "ZA", "JP", "CN", "KR", "SE", "CH", "IT", "ES", "NZ",
+];
+
 function RequirementPreview({ data }: { data: UserRequirements }) {
   const query = buildRequirementSearchQuery(data);
   const chips = getRequirementSummaryChips(data);
@@ -134,7 +140,7 @@ function RequirementPreview({ data }: { data: UserRequirements }) {
   );
 }
 
-export function RequirementWizard({ initial }: { initial?: UserRequirements | null }) {
+export function RequirementWizard({ initial, onClose }: { initial?: UserRequirements | null; onClose?: () => void }) {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [pending, startTransition] = useTransition();
@@ -195,6 +201,7 @@ export function RequirementWizard({ initial }: { initial?: UserRequirements | nu
       try {
         await saveRequirementProfile(data);
         toast.success("Requirements saved — smart search is now personalized");
+        onClose?.();
         const query = buildRequirementSearchQuery(data);
         if (mode === "search") {
           router.push(query ? `/user/discover?q=${encodeURIComponent(query)}` : "/user/discover");
@@ -335,17 +342,43 @@ export function RequirementWizard({ initial }: { initial?: UserRequirements | nu
               </div>
               <input
                 type="range"
-                min={1000}
-                max={100000}
+                min={500}
+                max={1000000}
                 step={1000}
                 value={data.budgetMax ?? 10000}
                 onChange={(e) => setData((d) => ({ ...d, budgetMax: Number(e.target.value) }))}
                 className="w-full accent-brand-blue"
               />
-              <p className="text-center font-heading text-2xl font-bold text-slate-900">
-                ₹{(data.budgetMax ?? 10000).toLocaleString()}
-                <span className="text-sm font-normal text-slate-500"> / month max</span>
-              </p>
+              <div className="flex items-center justify-center gap-3">
+                <p className="text-center font-heading text-2xl font-bold text-slate-900">
+                  ₹{(data.budgetMax ?? 10000).toLocaleString()}
+                  <span className="text-sm font-normal text-slate-500"> / month max</span>
+                </p>
+              </div>
+              <div>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Or enter custom amount
+                </p>
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400">
+                      ₹
+                    </span>
+                    <input
+                      type="number"
+                      min={500}
+                      max={10000000}
+                      placeholder="50000"
+                      value={data.budgetMax ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value ? Number(e.target.value) : null;
+                        setData((d) => ({ ...d, budgetMax: val ?? 500 }));
+                      }}
+                      className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-8 pr-3 text-sm font-medium text-slate-900 outline-none transition-all focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/20"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -459,6 +492,29 @@ export function RequirementWizard({ initial }: { initial?: UserRequirements | nu
                   {data.deploymentPreference === d.value && <Check className="h-4 w-4" />}
                 </button>
               ))}
+            </div>
+          )}
+
+          {step === 6 && (
+            <div className="space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Select your country</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {COUNTRIES.map((code) => (
+                  <button
+                    key={code}
+                    type="button"
+                    onClick={() => setData((d) => ({ ...d, country: code }))}
+                    className={cn(
+                      "rounded-xl border px-3 py-2.5 text-sm font-medium transition-all",
+                      data.country === code
+                        ? "border-brand-blue bg-brand-blue/10 text-brand-blue"
+                        : "border-slate-200 text-slate-600 hover:border-brand-blue/30",
+                    )}
+                  >
+                    {code}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>

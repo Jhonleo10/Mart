@@ -25,7 +25,7 @@ export function BecomeSellerLink({
       href={AUTH_PATHS.companyRegister}
       className={cn("become-seller-gradient group", sizeClasses[size], className)}
     >
-      <span className="become-seller-gradient-text font-semibold">Become a Seller</span>
+      <span className="become-seller-gradient-text font-semibold">Become a Vendor</span>
       {showIcon ? (
         <Sparkles className="h-3.5 w-3.5 text-brand-green opacity-70 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
       ) : null}

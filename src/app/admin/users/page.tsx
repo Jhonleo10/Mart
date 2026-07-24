@@ -88,12 +88,12 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
         <table className="admin-table admin-table-premium">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Company</th>
-              <th>Joined</th>
+              <th scope="col">Name</th>
+              <th scope="col">Email</th>
+              <th scope="col">Role</th>
+              <th scope="col">Status</th>
+              <th scope="col">Company</th>
+              <th scope="col">Joined</th>
             </tr>
           </thead>
           <tbody>

@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { BookingForm } from "@/components/forms/booking-form";
 import { ProductImageCarousel } from "@/components/products/product-image-carousel";
+import { ExpandableText } from "@/components/ui/expandable-text";
 import { calculateAverageRating, cn } from "@/lib/utils";
 import { previewList } from "@/lib/product-preview";
 import { formatProductPriceLabel } from "@/lib/product-price";
@@ -180,9 +181,7 @@ export function ProductBookDemoView({
             {/* Overview sections */}
             <div className="rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-7">
               <h2 className="font-heading text-lg font-semibold text-slate-900">About this product</h2>
-              <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">
-                {descriptionFull}
-              </p>
+              <ExpandableText text={descriptionFull} className="mt-3" maxChars={400} />
             </div>
 
             {visibleFeatures.length > 0 && (

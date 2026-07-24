@@ -88,7 +88,7 @@ export default async function UserRecommendationsPage() {
                       shortDescription: rec.shortDescription,
                       pricingModel: rec.pricingModel,
                       price: rec.price,
-                      company: { name: rec.companyName, slug: "", logo: rec.companyLogo, status: "APPROVED" },
+                      company: { name: rec.companyName, slug: rec.companySlug, logo: rec.companyLogo, status: "APPROVED" },
                       category: { name: rec.categoryName },
                       images: rec.imageUrl ? [{ url: rec.imageUrl }] : [],
                       matchScore: rec.profileScored ? rec.matchScore : undefined,

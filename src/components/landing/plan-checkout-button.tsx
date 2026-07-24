@@ -20,7 +20,7 @@ export function PlanCheckoutButton({ plan, className }: PlanCheckoutButtonProps)
         className={cn("w-full", isGreen && "bg-brand-green hover:bg-brand-green-dark")}
         variant={isGreen ? "default" : plan.highlighted ? "default" : "outline"}
       >
-        {plan.cta}
+        Subscribe Now
       </Button>
     </Link>
   );

@@ -137,13 +137,13 @@ export default async function CompanyProductsPage({ searchParams }: PageProps) {
         >
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Category</th>
-              <th>Status</th>
-              <th>Views</th>
-              <th>Leads</th>
-              <th>Spotlight</th>
-              <th>Actions</th>
+              <th scope="col">Name</th>
+              <th scope="col">Category</th>
+              <th scope="col">Status</th>
+              <th scope="col">Views</th>
+              <th scope="col">Leads</th>
+              <th scope="col">Spotlight</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>

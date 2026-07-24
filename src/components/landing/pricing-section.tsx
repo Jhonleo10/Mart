@@ -30,7 +30,7 @@ export function PricingSection({ plans }: { plans: PricingPlan[] }) {
           <ScrollReveal key={plan.id} delay={index * 100}>
             <article
               className={cn(
-                "ref-pricing-card group relative flex h-full flex-col overflow-hidden",
+                "ref-pricing-card group relative flex h-full flex-col overflow-hidden transition-all duration-200",
                 plan.highlighted && "ref-pricing-card-highlighted",
                 plan.accent === "green" && "ref-pricing-card-green",
               )}

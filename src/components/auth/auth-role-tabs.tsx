@@ -35,8 +35,8 @@ const TABS: {
   {
     id: "seller",
     href: AUTH_PATHS.companyRegister,
-    label: "Become a Seller",
-    shortLabel: "Seller",
+    label: "Become a Vendor",
+    shortLabel: "Vendor",
     icon: Store,
     tone: "green",
   },

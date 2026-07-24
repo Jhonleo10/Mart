@@ -13,7 +13,7 @@ const LINKS = [
   { href: "/", label: "Home", icon: Home },
   { href: AUTH_PATHS.login, label: "Login" },
   { href: AUTH_PATHS.userRegister, label: "Buyer Register" },
-  { href: AUTH_PATHS.companyRegister, label: "Become a Seller", seller: true },
+  { href: AUTH_PATHS.companyRegister, label: "Become a Vendor", seller: true },
 ] as const;
 
 export function AuthNavbar({

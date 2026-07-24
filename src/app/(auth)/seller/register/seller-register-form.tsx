@@ -187,17 +187,17 @@ export default function SellerRegisterForm({
       />
 
       <AuthPageShell
-        badge="Seller Registration"
+        badge="Vendor Registration"
         badgeTone="green"
         activeTab="seller"
         compact
         fitViewport
         centerHeader
-        title="Become a Seller"
+        title="Become a Vendor"
         subtitle="List your software, choose a plan, and pay securely."
         footer={
           <p className="text-center text-xs text-slate-500">
-            Already a seller?{" "}
+            Already a vendor?{" "}
             <Link href={AUTH_PATHS.login} className="font-semibold text-brand-green hover:underline">
               Sign in
             </Link>
@@ -422,10 +422,10 @@ export default function SellerRegisterForm({
           {step === 2 && (
             <>
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Select Seller Plan
+                Select Vendor Plan
               </p>
               <p className="text-[11px] text-slate-400">
-                Same three plans as the homepage — select a paid seller plan to continue.
+                Same three plans as the homepage — select a paid vendor plan to continue.
               </p>
               {checkoutPlans.length === 0 ? (
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">

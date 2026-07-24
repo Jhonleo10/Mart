@@ -82,7 +82,7 @@ export function IntelligentComparisonView({ data }: { data: IntelligentCompariso
         <table className="w-full min-w-[700px] text-left text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50/80">
-              <th className="p-5 font-bold text-slate-400 uppercase tracking-wider text-xs">Dimension</th>
+              <th scope="col" className="p-5 font-bold text-slate-400 uppercase tracking-wider text-xs">Dimension</th>
               <th
                 className={cn(
                   "p-5 font-heading text-lg font-bold w-2/5",

@@ -254,14 +254,14 @@ export function DashboardSidebar({
 
                 title={collapsed ? item.label : undefined}
 
+                aria-current={active ? "page" : undefined}
+
                 onClick={() => setMobileOpen(false)}
 
                 className={cn(
 
-                  "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all duration-200",
-
+                  "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/50",
                   active ? theme.activeNav : theme.inactiveNav,
-
                   collapsed && "justify-center px-2",
 
                 )}
@@ -300,10 +300,8 @@ export function DashboardSidebar({
 
             className={cn(
 
-              "mb-0.5 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-brand-blue",
-
+              "mb-0.5 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-600 transition-colors duration-200 hover:bg-slate-50 hover:text-brand-blue focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/50",
               collapsed && "justify-center px-2",
-
               pathname === profileHref && "bg-brand-blue/5 text-brand-blue",
 
             )}
@@ -312,7 +310,7 @@ export function DashboardSidebar({
 
             <User className="h-[17px] w-[17px] shrink-0" />
 
-            {!collapsed && <span>Edit</span>}
+            {!collapsed && <span>Profile</span>}
 
           </Link>
 
@@ -328,7 +326,7 @@ export function DashboardSidebar({
 
               className={cn(
 
-                "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-500 transition-colors hover:bg-red-50 hover:text-red-500",
+                "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-slate-500 transition-colors duration-200 hover:bg-red-50 hover:text-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50",
 
                 collapsed && "justify-center px-2",
 

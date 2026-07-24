@@ -30,6 +30,7 @@ export interface ProductRecommendation {
   name: string;
   shortDescription: string;
   companyName: string;
+  companySlug: string;
   companyLogo: string | null;
   categoryName: string;
   price: number | null;

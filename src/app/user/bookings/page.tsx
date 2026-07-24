@@ -9,6 +9,7 @@ import { DashboardPanel } from "@/components/dashboard/dashboard-panel";
 import { DashboardFilterBar } from "@/components/dashboard/dashboard-filter-bar";
 import { DashboardPagination, DASHBOARD_PAGE_SIZE } from "@/components/dashboard/dashboard-pagination";
 import { BuyerFlowCallout } from "@/components/user/buyer-flow-callout";
+import { CancelBookingButton } from "@/components/user/cancel-booking-button";
 import { Calendar, Clock, ExternalLink, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getProductBookDemoPath } from "@/lib/product-public-url";
@@ -128,7 +129,12 @@ export default async function UserBookingsPage({ searchParams }: PageProps) {
                 ) : null}
                 <p className="mt-2 text-xs text-slate-400">Booked {formatDate(booking.createdAt)}</p>
               </div>
-              <StatusBadge status={booking.status} />
+              <div className="flex flex-col items-end gap-2">
+                <StatusBadge status={booking.status} />
+                {["NEW", "CONTACTED", "QUALIFIED"].includes(booking.status) && (
+                  <CancelBookingButton bookingId={booking.id} />
+                )}
+              </div>
             </div>
           </DashboardPanel>
         ))}

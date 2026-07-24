@@ -115,6 +115,26 @@ export function LegalDocumentPage({
     return () => window.removeEventListener("scroll", onScroll);
   }, [sectionIds]);
 
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
+        }
+      },
+      { rootMargin: "-140px 0px -50% 0px", threshold: 0 },
+    );
+
+    for (const id of sectionIds) {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    }
+
+    return () => observer.disconnect();
+  }, [sectionIds]);
+
   return (
     <div className={cn("legal-page", `legal-page--${variant}`)}>
       <div className="legal-progress" aria-hidden>
@@ -165,7 +185,7 @@ export function LegalDocumentPage({
         </div>
 
         <div className="legal-layout">
-          <aside className="legal-toc">
+          <aside className="legal-toc sticky top-24 self-start">
             <p className="legal-toc-heading">On this page</p>
             <nav aria-label="Table of contents">
               <ul className="legal-toc-list">

@@ -29,16 +29,16 @@ export function AdminCompaniesTable({ companies }: { companies: AdminCompanyRow[
     <>
       <table className="admin-table admin-table-premium admin-table-companies admin-table-companies-v2">
         <thead>
-          <tr>
-            <th className="w-[2rem] text-center">Profile</th>
-            <th>Company</th>
-            <th className="hidden md:table-cell">Owner</th>
-            <th className="text-center">Products</th>
-            <th className="text-center hidden sm:table-cell">Leads</th>
-            <th className="text-center hidden lg:table-cell">Health</th>
-            <th className="text-center">Status</th>
-            <th className="min-w-0 text-center lg:min-w-[12rem]">Actions</th>
-          </tr>
+            <tr>
+              <th scope="col" className="w-[2rem] text-center">Profile</th>
+              <th scope="col">Company</th>
+              <th scope="col" className="hidden md:table-cell">Owner</th>
+              <th scope="col" className="text-center">Products</th>
+              <th scope="col" className="text-center hidden sm:table-cell">Leads</th>
+              <th scope="col" className="text-center hidden lg:table-cell">Health</th>
+              <th scope="col" className="text-center">Status</th>
+              <th scope="col" className="min-w-0 text-center lg:min-w-[12rem]">Actions</th>
+            </tr>
         </thead>
         <tbody>
           {companies.map((company) => (

@@ -102,12 +102,12 @@ export default async function AdminAnalyticsPage({ searchParams }: PageProps) {
         <table className="admin-table admin-table-premium">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Product</th>
-              <th>Company</th>
-              <th>Category</th>
-              <th>Score</th>
-              <th>Views</th>
+              <th scope="col">#</th>
+              <th scope="col">Product</th>
+              <th scope="col">Company</th>
+              <th scope="col">Category</th>
+              <th scope="col">Score</th>
+              <th scope="col">Views</th>
             </tr>
           </thead>
           <tbody>
@@ -155,12 +155,12 @@ export default async function AdminAnalyticsPage({ searchParams }: PageProps) {
         <table className="admin-table admin-table-premium" id="all-leads">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Product</th>
-              <th>Company</th>
-              <th>Type</th>
-              <th>Status</th>
-              <th>Date</th>
+              <th scope="col">Name</th>
+              <th scope="col">Product</th>
+              <th scope="col">Company</th>
+              <th scope="col">Type</th>
+              <th scope="col">Status</th>
+              <th scope="col">Date</th>
             </tr>
           </thead>
           <tbody>

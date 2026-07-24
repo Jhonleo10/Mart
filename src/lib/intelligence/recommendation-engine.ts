@@ -72,6 +72,7 @@ function toRecommendation(
     name: product.name,
     shortDescription: product.shortDescription,
     companyName: product.company.name,
+    companySlug: product.company.slug,
     companyLogo: product.company.logo,
     categoryName: product.category.name,
     price: product.price,

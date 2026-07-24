@@ -17,14 +17,14 @@ interface Props {
 export function CompanyRegisteredEmail({ ownerName, companyName }: Props) {
   return (
     <EmailLayout
-      preview="Your seller account was created — verify your email"
-      title="Seller Account Created"
-      subtitle="Payment received. Complete email verification to activate your seller profile."
+      preview="Your vendor account was created — verify your email"
+      title="Vendor Account Created"
+      subtitle="Payment received. Complete email verification to activate your vendor profile."
     >
       <EmailBadge tone="green">Registration</EmailBadge>
       <EmailGreeting name={ownerName} />
       <EmailParagraph>
-        Thank you for choosing Genius Mart as your SaaS marketplace partner. Your seller
+        Thank you for choosing Genius Mart as your SaaS marketplace partner. Your vendor
         account has been created and we have received your payment.
       </EmailParagraph>
       <EmailDetailCard title="Account Summary">

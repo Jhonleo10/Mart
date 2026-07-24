@@ -1,11 +1,19 @@
 "use client";
 
-import Link from "next/link";
+import { useCallback } from "react";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { ContactForm } from "@/components/contact/contact-form";
 import { ScrollReveal } from "@/components/ui/scroll-reveal";
 
 export function HomeContactSection() {
+  const scrollToForm = useCallback(() => {
+    const form = document.querySelector<HTMLDivElement>(".ref-cta-form-card");
+    if (!form) return;
+    form.scrollIntoView({ behavior: "smooth", block: "center" });
+    const firstInput = form.querySelector<HTMLInputElement>("input, textarea");
+    firstInput?.focus({ preventScroll: true });
+  }, []);
+
   return (
     <section id="contact" className="section-anchor safe-container py-14 sm:pb-16 lg:py-20">
       <div className="ref-cta-banner ref-cta-banner-animated">
@@ -36,9 +44,13 @@ export function HomeContactSection() {
                   Puducherry, India
                 </li>
               </ul>
-              <a href="#contact" className="mt-5 inline-block text-sm font-semibold text-white underline-offset-4 hover:underline">
+              <button
+                type="button"
+                onClick={scrollToForm}
+                className="mt-5 inline-block text-sm font-semibold text-white underline-offset-4 hover:underline cursor-pointer"
+              >
                 Jump to contact form →
-              </a>
+              </button>
             </div>
           </ScrollReveal>
 

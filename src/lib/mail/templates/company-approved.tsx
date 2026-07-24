@@ -18,10 +18,10 @@ interface Props {
 export function CompanyApprovedEmail({ ownerName, companyName }: Props) {
   return (
     <EmailLayout
-      preview="Your seller account is now active on Genius Mart"
+      preview="Your vendor account is now active on Genius Mart"
       title="Your Account Has Been Verified"
       subtitle="You can now list products, manage leads, and grow your presence."
-      ctaLabel="Go to Seller Dashboard"
+      ctaLabel="Go to Vendor Dashboard"
       ctaHref={appUrl("/company/dashboard")}
     >
       <EmailBadge tone="green">Approved</EmailBadge>

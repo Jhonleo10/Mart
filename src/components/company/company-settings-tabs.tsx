@@ -11,12 +11,14 @@ import {
   Package,
   Sparkles,
   Star,
+  Shield,
 } from "lucide-react";
 import {
   CompanyProfileSettingsForm,
 } from "@/components/company/company-settings";
 import { CompanyPlanUpgrade } from "@/components/company/company-plan-upgrade";
 import { GoogleCalendarConnect } from "@/components/meeting/google-calendar-connect";
+import { CompanyPasswordForm } from "@/components/company/company-password-form";
 import { CompanyCreativeTabShell } from "@/components/company/company-creative-tab-rail";
 import type { SubscriptionPlan } from "@prisma/client";
 import {
@@ -47,6 +49,13 @@ const TABS = [
     icon: Plug,
     description: "Calendar sync",
     accent: "violet" as const,
+  },
+  {
+    id: "security",
+    label: "Security",
+    icon: Shield,
+    description: "Password & access",
+    accent: "amber" as const,
   },
 ] as const;
 
@@ -79,7 +88,7 @@ export function CompanySettingsTabs({
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const t = params.get("tab");
-    if (t === "plan" || t === "integrations" || t === "profile") {
+    if (t === "plan" || t === "integrations" || t === "profile" || t === "security") {
       setTab(t);
     }
   }, []);
@@ -205,6 +214,12 @@ export function CompanySettingsTabs({
             <div className="rounded-xl border border-violet-100 bg-gradient-to-br from-violet-50/80 to-white p-4">
               <GoogleCalendarConnect {...googleProps} />
             </div>
+          </div>
+        )}
+
+        {tab === "security" && (
+          <div className="company-settings-panel">
+            <CompanyPasswordForm />
           </div>
         )}
       </CompanyCreativeTabShell>

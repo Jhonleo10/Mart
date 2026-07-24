@@ -14,11 +14,12 @@ export const bookingRepository = {
     });
   },
 
-  listByCompany(companyId: string, status?: BookingStatus) {
+  listByCompany(companyId: string, status?: BookingStatus, take?: number) {
     return prisma.booking.findMany({
       where: { companyId, ...(status ? { status } : {}) },
       include: { product: true, user: true, demoMeeting: true },
       orderBy: { createdAt: "desc" },
+      ...(take ? { take } : {}),
     });
   },
 

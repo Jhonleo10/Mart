@@ -13,14 +13,14 @@ export default async function VerifyCompanyPage() {
         <CardContent className="space-y-4 text-sm text-slate-600">
           <p>
             Company accounts are reviewed by our admin team after registration. You will
-            receive an email when your seller account is activated.
+            receive an email when             your vendor account is activated.
           </p>
           <p>After approval, sign in from the login page to access your company dashboard.</p>
           <Button asChild className="w-full">
             <Link href={AUTH_PATHS.login}>Go to Login</Link>
           </Button>
           <Button asChild variant="outline" className="w-full">
-            <Link href={AUTH_PATHS.companyRegister}>Register as Seller</Link>
+            <Link href={AUTH_PATHS.companyRegister}>Register as Vendor</Link>
           </Button>
         </CardContent>
       </Card>

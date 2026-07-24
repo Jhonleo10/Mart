@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { LandingNav } from "@/components/layout/landing-nav";
 import { AUTH_PATHS } from "@/lib/auth-paths";
 import { BecomeSellerLink } from "@/components/ui/become-seller-link";
+import { LogoutButton } from "@/components/layout/logout-button";
 
 interface MobileNavProps {
   dashboardHref?: string;
@@ -53,11 +54,14 @@ export function MobileNav({ dashboardHref, isLoggedIn }: MobileNavProps) {
                   <BecomeSellerLink size="md" className="w-full justify-center" />
                 </div>
               ) : (
-                dashboardHref && (
-                  <Link href={dashboardHref} onClick={close} className="block">
-                    <Button className="w-full">Dashboard</Button>
-                  </Link>
-                )
+                <div className="grid grid-cols-1 gap-2">
+                  {dashboardHref && (
+                    <Link href={dashboardHref} onClick={close} className="block">
+                      <Button className="w-full">Dashboard</Button>
+                    </Link>
+                  )}
+                  <LogoutButton variant="outline" size="default" className="w-full justify-center" />
+                </div>
               )}
             </div>
           </nav>

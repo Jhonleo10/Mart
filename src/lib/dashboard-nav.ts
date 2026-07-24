@@ -33,7 +33,8 @@ export const COMPANY_NAV: NavItem[] = [
 export const USER_NAV: NavItem[] = [
   { href: "/user/dashboard", label: "Home", iconName: "LayoutDashboard" },
   { href: "/user/discover", label: "Smart Search", iconName: "Search" },
-  { href: "/user/recommendations", label: "For You", iconName: "BarChart3" },
+  { href: "/user/recommendations", label: "For You", iconName: "Sparkles" },
+  { href: "/user/requirements", label: "Requirements", iconName: "Target" },
   { href: "/user/bookings", label: "Bookings", iconName: "Package" },
   { href: "/user/meetings", label: "Meetings", iconName: "Video" },
   { href: "/user/wishlist", label: "Saved", iconName: "Heart" },

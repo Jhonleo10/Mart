@@ -84,7 +84,7 @@ export default function RegisterForm() {
             </Link>
             {" · "}
             <Link href={AUTH_PATHS.companyRegister} className="font-semibold text-brand-green hover:underline">
-              Become a Seller
+              Become a Vendor
             </Link>
             {" · "}
             <Link href="/terms-of-service" className="hover:text-brand-blue hover:underline">

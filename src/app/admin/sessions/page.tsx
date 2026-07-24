@@ -30,15 +30,15 @@ export default async function AdminSessionsPage() {
             <table className="admin-table w-full min-w-[720px] text-left text-sm">
               <thead>
                 <tr>
-                  <th>User</th>
-                  <th>Role</th>
-                  <th>Device</th>
-                  <th>Browser</th>
-                  <th>IP</th>
-                  <th>Login</th>
-                  <th>Last activity</th>
-                  <th>Expires</th>
-                  <th />
+                  <th scope="col">User</th>
+                  <th scope="col">Role</th>
+                  <th scope="col">Device</th>
+                  <th scope="col">Browser</th>
+                  <th scope="col">IP</th>
+                  <th scope="col">Login</th>
+                  <th scope="col">Last activity</th>
+                  <th scope="col">Expires</th>
+                  <th scope="col" />
                 </tr>
               </thead>
               <tbody>

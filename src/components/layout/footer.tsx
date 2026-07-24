@@ -17,7 +17,7 @@ const PRODUCT_LINKS = [
 
 const COMPANY_LINKS = [
     { label: "About Us", href: landingHref("about") },
-    { label: "Become a Seller", href: "/seller/register" },
+    { label: "Become a Vendor", href: "/seller/register" },
     { label: "Terms of Service", href: "/terms-of-service" },
     { label: "Privacy Policy", href: "/privacy-policy" },
 ];
@@ -34,9 +34,9 @@ export async function Footer() {
     return (
         <footer className="border-t border-slate-200 bg-slate-50">
             <div className="safe-container py-12 lg:py-16">
-                <div className="grid gap-10 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:gap-8">
+                <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-8">
                     {/* Brand column */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 sm:col-span-2 lg:col-span-1">
                         <Link href="/" className="flex items-center gap-2.5">
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl">
                                 <Image
@@ -74,9 +74,9 @@ export async function Footer() {
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label={label}
-                                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-all hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-md"
+                                    className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 shadow-sm transition-all duration-200 hover:border-brand-blue/30 hover:text-brand-blue hover:shadow-md hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/50"
                                 >
-                                    <Icon className="h-3.5 w-3.5" />
+                                    <Icon className="h-4 w-4" />
                                 </a>
                             ))}
                         </div>
@@ -87,11 +87,11 @@ export async function Footer() {
                         <h3 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">
                             Navigate
                         </h3>
-                        <ul className="space-y-2.5">
+                        <ul className="space-y-3">
                             <li>
                                 <Link
                                     href="/"
-                                    className="text-sm text-slate-600 transition-colors hover:text-brand-blue"
+                                    className="text-sm text-slate-600 transition-colors duration-200 hover:text-brand-blue"
                                 >
                                     Home
                                 </Link>
@@ -100,7 +100,7 @@ export async function Footer() {
                                 <li key={link.id}>
                                     <Link
                                         href={landingHref(link.id)}
-                                        className="text-sm text-slate-600 transition-colors hover:text-brand-blue"
+                                        className="text-sm text-slate-600 transition-colors duration-200 hover:text-brand-blue"
                                     >
                                         {link.label}
                                     </Link>
@@ -109,17 +109,17 @@ export async function Footer() {
                         </ul>
                     </div>
 
-                    {/* Products */}
+                    {/* Marketplace */}
                     <div>
                         <h3 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">
                             Marketplace
                         </h3>
-                        <ul className="space-y-2.5">
+                        <ul className="space-y-3">
                             {PRODUCT_LINKS.map((link) => (
                                 <li key={link.label}>
                                     <Link
                                         href={link.href}
-                                        className="text-sm text-slate-600 transition-colors hover:text-brand-blue"
+                                        className="text-sm text-slate-600 transition-colors duration-200 hover:text-brand-blue"
                                     >
                                         {link.label}
                                     </Link>
@@ -133,12 +133,12 @@ export async function Footer() {
                         <h3 className="mb-4 text-xs font-bold uppercase tracking-widest text-slate-400">
                             Company
                         </h3>
-                        <ul className="space-y-2.5">
+                        <ul className="space-y-3">
                             {COMPANY_LINKS.map((link) => (
                                 <li key={link.label}>
                                     <Link
                                         href={link.href}
-                                        className="text-sm text-slate-600 transition-colors hover:text-brand-blue"
+                                        className="text-sm text-slate-600 transition-colors duration-200 hover:text-brand-blue"
                                     >
                                         {link.label}
                                     </Link>
@@ -147,7 +147,7 @@ export async function Footer() {
                             <li>
                                 <Link
                                     href="/login"
-                                    className="text-sm text-slate-600 transition-colors hover:text-brand-blue"
+                                    className="text-sm text-slate-600 transition-colors duration-200 hover:text-brand-blue"
                                 >
                                     Sign In
                                 </Link>
@@ -155,17 +155,9 @@ export async function Footer() {
                             <li>
                                 <Link
                                     href="/register"
-                                    className="text-sm text-slate-600 transition-colors hover:text-brand-blue"
+                                    className="text-sm text-slate-600 transition-colors duration-200 hover:text-brand-blue"
                                 >
                                     Register as Buyer
-                                </Link>
-                            </li>
-                            <li>
-                                <Link
-                                    href="/seller/register"
-                                    className="text-sm text-slate-600 transition-colors hover:text-brand-green"
-                                >
-                                    Seller Registration
                                 </Link>
                             </li>
                         </ul>
@@ -173,20 +165,20 @@ export async function Footer() {
                 </div>
 
                 {/* Bottom bar */}
-                <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-slate-200 pt-8 sm:flex-row">
+                <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200 pt-8 sm:flex-row">
                     <p className="text-xs text-slate-400">
                         &copy; {new Date().getFullYear()} {site.name}. All rights reserved.
                     </p>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-6">
                         <Link
                             href="/privacy-policy"
-                            className="text-xs text-slate-400 transition-colors hover:text-slate-600"
+                            className="text-xs text-slate-400 transition-colors duration-200 hover:text-slate-600"
                         >
                             Privacy Policy
                         </Link>
                         <Link
                             href="/terms-of-service"
-                            className="text-xs text-slate-400 transition-colors hover:text-slate-600"
+                            className="text-xs text-slate-400 transition-colors duration-200 hover:text-slate-600"
                         >
                             Terms of Service
                         </Link>

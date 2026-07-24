@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Calendar, Clock } from "lucide-react";
 import type { BookingStatus } from "@prisma/client";
 import { StatusBadge } from "@/components/ui/badge";
@@ -7,12 +8,40 @@ import { LeadStatusButtons } from "@/components/company/lead-status-buttons";
 import { formatDate } from "@/lib/utils";
 import { LEAD_KANBAN_COLUMNS, leadMatchesStage } from "@/lib/lead-stages";
 import type { LeadRow } from "./leads-workspace";
+import { cn } from "@/lib/utils";
 
 function showLeadActions(status: BookingStatus, hasScheduledMeeting: boolean) {
   // Keep actions visible for CONTACTED leads without a scheduled meeting,
   // and for leads that already have a meeting (link to Meetings).
   if (hasScheduledMeeting) return true;
   return ["NEW", "CONTACTED", "QUALIFIED"].includes(status);
+}
+
+function LeadMessage({ message }: { message: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const isLong = message.length > 100;
+
+  return (
+    <>
+      <p
+        className={cn(
+          "mb-1 border-l-2 border-brand-blue/20 pl-2 text-xs italic text-slate-500 break-words",
+          !expanded && "line-clamp-2",
+        )}
+      >
+        &ldquo;{message}&rdquo;
+      </p>
+      {isLong && (
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mb-3 ml-2 text-[10px] font-semibold text-brand-blue hover:text-brand-blue-dark transition-colors"
+        >
+          {expanded ? "Read Less" : "Read More"}
+        </button>
+      )}
+    </>
+  );
 }
 
 export function LeadKanban({
@@ -60,7 +89,8 @@ export function LeadKanban({
                 columnLeads.map((lead) => (
                   <article
                     key={lead.id}
-                    className="group relative flex flex-col rounded-2xl border border-white/80 bg-white p-4 shadow-sm transition-all hover:-translate-y-1 hover:shadow-md"
+                    tabIndex={0}
+                    className="group relative flex flex-col rounded-2xl border border-white/80 bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-blue/50"
                   >
                     <div className="mb-3 flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
@@ -97,9 +127,7 @@ export function LeadKanban({
                     )}
 
                     {lead.message && (
-                      <p className="mb-3 line-clamp-2 border-l-2 border-brand-blue/20 pl-2 text-xs italic text-slate-500">
-                        &ldquo;{lead.message}&rdquo;
-                      </p>
+                      <LeadMessage message={lead.message} />
                     )}
 
                     <div className="mt-auto flex items-end justify-between border-t border-slate-100 pt-3">

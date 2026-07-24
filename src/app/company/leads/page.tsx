@@ -42,7 +42,7 @@ export default async function CompanyLeadsPage({ searchParams }: PageProps) {
       stage,
       q: params.q,
     }),
-    bookingRepository.listByCompany(company.id),
+    bookingRepository.listByCompany(company.id, undefined, 200),
     companyGoogleRepository.findByCompanyId(company.id),
   ]);
 

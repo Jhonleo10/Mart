@@ -6,7 +6,7 @@ export const wishlistRepository = {
       where: { userId },
       include: {
         product: {
-          include: { company: true, category: true, images: { take: 1 } },
+          include: { company: true, category: true, images: { take: 1 }, reviews: { select: { rating: true } } },
         },
       },
       orderBy: { createdAt: "desc" },

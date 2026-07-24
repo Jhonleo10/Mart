@@ -131,6 +131,7 @@ export function SmartSearchBar({
 
   const handleClearAll = useCallback(async () => {
     setRemovingChips(true);
+    setQuery("");
     const result = await clearAllRequirementsAction();
     setRemovingChips(false);
     if ("error" in result) {
@@ -138,6 +139,7 @@ export function SmartSearchBar({
       return;
     }
     setLocalChips([]);
+    router.push("/user/discover");
     router.refresh();
   }, [router]);
 
@@ -254,7 +256,7 @@ export function SmartSearchBar({
       <Dialog open={requirementsOpen} onOpenChange={setRequirementsOpen}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto p-0">
           <DialogTitle className="sr-only">Requirement Builder</DialogTitle>
-          <RequirementWizard />
+          <RequirementWizard onClose={() => setRequirementsOpen(false)} />
         </DialogContent>
       </Dialog>
 

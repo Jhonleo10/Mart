@@ -7,8 +7,8 @@ import SellerRegisterForm from "./seller-register-form";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Register as a Seller | Genius Mart",
-  description: "Create your seller account and publish your software.",
+  title: "Register as a Vendor | Genius Mart",
+  description: "Create your vendor account and publish your software.",
 };
 
 export default async function SellerRegisterPage() {
